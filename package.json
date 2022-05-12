@@ -3,5 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "author": "JayJay1024 <lygm1062@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "format": "prettier '**/src/**/*.ts' --write"
+  },
+  "devDependencies": {
+    "prettier": "2.6.2"
+  }
 }
