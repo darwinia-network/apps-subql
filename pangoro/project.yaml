@@ -26,7 +26,7 @@ dataSources:
     mapping:
       file: ./dist/index.js
       handlers:
-        - handler: handleStakingRingBondRingEvent
+        - handler: handleStakingBondRingEvent
           kind: substrate/EventHandler
           filter:
             module: staking
