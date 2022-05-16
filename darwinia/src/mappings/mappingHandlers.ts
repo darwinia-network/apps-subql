@@ -1,12 +1,6 @@
 import { SubstrateExtrinsic, SubstrateEvent } from "@subql/types";
 import { StakingRecordEntity, StakingType, TokenSymbol } from "../types";
 
-const UNBONDING_PERIOD = 14 * 24 * 60 * 60 * 1000; // 14-day unbonding period
-
-const getMonths = (start: number, expire: number) => {
-  return start >= expire ? 0 : (expire - start) / 1000 / 60 / 60 / 24 / 30;
-};
-
 export async function handleStakingBondRingEvent(event: SubstrateEvent): Promise<void> {
   const {
     event: {
@@ -21,11 +15,10 @@ export async function handleStakingBondRingEvent(event: SubstrateEvent): Promise
   record.tokenSymbol = TokenSymbol.RING;
 
   record.amount = amount.toString();
-  record.months = getMonths(Number(startTime.toString()), Number(expireTime.toString()));
-  record.startTime = Number(startTime.toString());
-  record.expireTime = Number(expireTime.toString());
+  record.startTime = startTime.toString();
+  record.expireTime = expireTime.toString();
 
-  record.blockTime = event.block.timestamp.getTime();
+  record.blockTime = event.block.timestamp.getTime().toString();
   record.blockNumber = event.block.block.header.number.toNumber();
   record.extrinsicIndex = event.extrinsic.idx;
 
@@ -46,11 +39,10 @@ export async function handleStakingRingBondedEvent(event: SubstrateEvent): Promi
   record.tokenSymbol = TokenSymbol.RING;
 
   record.amount = amount.toString();
-  record.months = getMonths(Number(expireTime.toString()), Number(startTime.toString()));
-  record.startTime = Number(startTime.toString());
-  record.expireTime = Number(expireTime.toString());
+  record.startTime = startTime.toString();
+  record.expireTime = expireTime.toString();
 
-  record.blockTime = event.block.timestamp.getTime();
+  record.blockTime = event.block.timestamp.getTime().toString();
   record.blockNumber = event.block.block.header.number.toNumber();
   record.extrinsicIndex = event.extrinsic.idx;
 
@@ -72,7 +64,7 @@ export async function handleStakingKtonBondedEvent(event: SubstrateEvent): Promi
 
   record.amount = amount.toString();
 
-  record.blockTime = event.block.timestamp.getTime();
+  record.blockTime = event.block.timestamp.getTime().toString();
   record.blockNumber = event.block.block.header.number.toNumber();
   record.extrinsicIndex = event.extrinsic.idx;
 
@@ -94,7 +86,7 @@ export async function handleStakingBondKtonEvent(event: SubstrateEvent): Promise
 
   record.amount = amount.toString();
 
-  record.blockTime = event.block.timestamp.getTime();
+  record.blockTime = event.block.timestamp.getTime().toString();
   record.blockNumber = event.block.block.header.number.toNumber();
   record.extrinsicIndex = event.extrinsic.idx;
 
@@ -115,10 +107,8 @@ export async function handleStakingRingUnbondedEvent(event: SubstrateEvent): Pro
   record.tokenSymbol = TokenSymbol.RING;
 
   record.amount = amount.toString();
-  record.startTime = event.block.timestamp.getTime();
-  record.expireTime = event.block.timestamp.getTime() + UNBONDING_PERIOD;
 
-  record.blockTime = event.block.timestamp.getTime();
+  record.blockTime = event.block.timestamp.getTime().toString();
   record.blockNumber = event.block.block.header.number.toNumber();
   record.extrinsicIndex = event.extrinsic.idx;
 
@@ -139,10 +129,8 @@ export async function handleStakingUnbondRingEvent(event: SubstrateEvent): Promi
   record.tokenSymbol = TokenSymbol.RING;
 
   record.amount = amount.toString();
-  record.startTime = event.block.timestamp.getTime();
-  record.expireTime = event.block.timestamp.getTime() + UNBONDING_PERIOD;
 
-  record.blockTime = event.block.timestamp.getTime();
+  record.blockTime = event.block.timestamp.getTime().toString();
   record.blockNumber = event.block.block.header.number.toNumber();
   record.extrinsicIndex = event.extrinsic.idx;
 
@@ -163,10 +151,8 @@ export async function handleStakingKtonUnbondedEvent(event: SubstrateEvent): Pro
   record.tokenSymbol = TokenSymbol.KTON;
 
   record.amount = amount.toString();
-  record.startTime = event.block.timestamp.getTime();
-  record.expireTime = event.block.timestamp.getTime() + UNBONDING_PERIOD;
 
-  record.blockTime = event.block.timestamp.getTime();
+  record.blockTime = event.block.timestamp.getTime().toString();
   record.blockNumber = event.block.block.header.number.toNumber();
   record.extrinsicIndex = event.extrinsic.idx;
 
@@ -187,10 +173,8 @@ export async function handleStakingUnbondKtonEvent(event: SubstrateEvent): Promi
   record.tokenSymbol = TokenSymbol.KTON;
 
   record.amount = amount.toString();
-  record.startTime = event.block.timestamp.getTime();
-  record.expireTime = event.block.timestamp.getTime() + UNBONDING_PERIOD;
 
-  record.blockTime = event.block.timestamp.getTime();
+  record.blockTime = event.block.timestamp.getTime().toString();
   record.blockNumber = event.block.block.header.number.toNumber();
   record.extrinsicIndex = event.extrinsic.idx;
 
@@ -201,11 +185,11 @@ export async function handleTryClaimDepositsWithPunishCall(extrinsic: SubstrateE
   const expireTime = extrinsic.extrinsic.method.args;
 
   const records = await StakingRecordEntity.getByAccount(extrinsic.extrinsic.signer.toString());
-  const exist = records ? records.find((item) => item.expireTime === Number(expireTime.toString())) : null;
+  const exist = records ? records.find((item) => item.expireTime === expireTime.toString()) : null;
 
   if (exist) {
     exist.isUnlockEarlier = true;
-    exist.earlierUnlockBlockTime = extrinsic.block.timestamp.getTime();
+    exist.earlierUnlockBlockTime = extrinsic.block.timestamp.getTime().toString();
     exist.earlierUnlockBlockNumber = extrinsic.block.block.header.number.toNumber();
     exist.earlierUnlockExtrinsicIndex = extrinsic.idx;
 

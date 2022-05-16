@@ -16,16 +16,15 @@ type StakingRecordEntity @entity {
   tokenSymbol: TokenSymbol
 
   amount: String
-  months: Int
-  startTime: Int
-  expireTime: Int
+  startTime: String
+  expireTime: String
 
-  blockTime: Int!
+  blockTime: String!
   blockNumber: Int!
   extrinsicIndex: Int!
 
   isUnlockEarlier: Boolean
-  earlierUnlockBlockTime: Int
+  earlierUnlockBlockTime: String
   earlierUnlockBlockNumber: Int
   earlierUnlockExtrinsicIndex: Int
 }
