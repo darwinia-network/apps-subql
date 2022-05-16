@@ -1,17 +1,31 @@
-type StarterEntity @entity {
+enum TokenSymbol {
+  RING,
+  KTON,
+}
 
-  id: ID! #id is a required field
+enum StakingType {
+  Bonded,
+  Unbonding,
+}
 
-  field1: Int!
+type StakingRecordEntity @entity {
+  id: ID!
 
-  field2: String #filed2 is an optional field
+  account: String! @index(unique: false)
+  type: StakingType
+  tokenSymbol: TokenSymbol
 
-  field3: BigInt
+  amount: String
+  months: Int
+  startTime: Int
+  expireTime: Int
 
-  field4: Date
+  blockTime: Int!
+  blockNumber: Int!
+  extrinsicIndex: Int!
 
-  field5: Boolean
-
-
-
+  isUnlockEarlier: Boolean
+  earlierUnlockBlockTime: Int
+  earlierUnlockBlockNumber: Int
+  earlierUnlockExtrinsicIndex: Int
 }
