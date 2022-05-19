@@ -1,6 +1,6 @@
 enum TokenSymbol {
-  RING,
-  KTON,
+  PRING,
+  PKTON,
 }
 
 enum StakingType {
