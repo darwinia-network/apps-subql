@@ -4,8 +4,9 @@ enum TokenSymbol {
 }
 
 enum StakingType {
+  Locked,
   Bonded,
-  Unbonding,
+  Unbond,
 }
 
 type StakingRecordEntity @entity {

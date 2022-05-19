@@ -11,7 +11,7 @@ export async function handleStakingBondRingEvent(event: SubstrateEvent): Promise
   const record = new StakingRecordEntity(event.extrinsic.extrinsic.hash.toString());
 
   record.account = event.extrinsic.extrinsic.signer.toString();
-  record.type = StakingType.Bonded;
+  record.type = startTime.toString() === expireTime.toString() ? StakingType.Bonded : StakingType.Locked;
   record.tokenSymbol = TokenSymbol.RING;
 
   record.amount = amount.toString();
@@ -35,7 +35,7 @@ export async function handleStakingRingBondedEvent(event: SubstrateEvent): Promi
   const record = new StakingRecordEntity(event.extrinsic.extrinsic.hash.toString());
 
   record.account = account.toString();
-  record.type = StakingType.Bonded;
+  record.type = startTime.toString() === expireTime.toString() ? StakingType.Bonded : StakingType.Locked;
   record.tokenSymbol = TokenSymbol.RING;
 
   record.amount = amount.toString();
@@ -103,7 +103,7 @@ export async function handleStakingRingUnbondedEvent(event: SubstrateEvent): Pro
   const record = new StakingRecordEntity(event.extrinsic.extrinsic.hash.toString());
 
   record.account = account.toString();
-  record.type = StakingType.Unbonding;
+  record.type = StakingType.Unbond;
   record.tokenSymbol = TokenSymbol.RING;
 
   record.amount = amount.toString();
@@ -125,7 +125,7 @@ export async function handleStakingUnbondRingEvent(event: SubstrateEvent): Promi
   const record = new StakingRecordEntity(event.extrinsic.extrinsic.hash.toString());
 
   record.account = event.extrinsic.extrinsic.signer.toString();
-  record.type = StakingType.Unbonding;
+  record.type = StakingType.Unbond;
   record.tokenSymbol = TokenSymbol.RING;
 
   record.amount = amount.toString();
@@ -147,7 +147,7 @@ export async function handleStakingKtonUnbondedEvent(event: SubstrateEvent): Pro
   const record = new StakingRecordEntity(event.extrinsic.extrinsic.hash.toString());
 
   record.account = account.toString();
-  record.type = StakingType.Unbonding;
+  record.type = StakingType.Unbond;
   record.tokenSymbol = TokenSymbol.KTON;
 
   record.amount = amount.toString();
@@ -169,7 +169,7 @@ export async function handleStakingUnbondKtonEvent(event: SubstrateEvent): Promi
   const record = new StakingRecordEntity(event.extrinsic.extrinsic.hash.toString());
 
   record.account = event.extrinsic.extrinsic.signer.toString();
-  record.type = StakingType.Unbonding;
+  record.type = StakingType.Unbond;
   record.tokenSymbol = TokenSymbol.KTON;
 
   record.amount = amount.toString();
