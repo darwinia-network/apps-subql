@@ -1,5 +1,5 @@
 import { SubstrateExtrinsic, SubstrateEvent } from "@subql/types";
-import { StakingRecordEntity, StakingType, TokenSymbol } from "../types";
+import { StakingRecordEntity, StakingType, TokenSymbol } from "../../types";
 
 export async function handleStakingBondRingEvent(event: SubstrateEvent): Promise<void> {
   const {
@@ -12,7 +12,7 @@ export async function handleStakingBondRingEvent(event: SubstrateEvent): Promise
 
   record.account = event.extrinsic.extrinsic.signer.toString();
   record.type = startTime.toString() === expireTime.toString() ? StakingType.Bonded : StakingType.Locked;
-  record.tokenSymbol = TokenSymbol.RING;
+  record.tokenSymbol = TokenSymbol.PRING;
 
   record.amount = amount.toString();
   record.startTime = startTime.toString();
@@ -36,7 +36,7 @@ export async function handleStakingRingBondedEvent(event: SubstrateEvent): Promi
 
   record.account = account.toString();
   record.type = startTime.toString() === expireTime.toString() ? StakingType.Bonded : StakingType.Locked;
-  record.tokenSymbol = TokenSymbol.RING;
+  record.tokenSymbol = TokenSymbol.PRING;
 
   record.amount = amount.toString();
   record.startTime = startTime.toString();
@@ -60,7 +60,7 @@ export async function handleStakingKtonBondedEvent(event: SubstrateEvent): Promi
 
   record.account = account.toString();
   record.type = StakingType.Bonded;
-  record.tokenSymbol = TokenSymbol.KTON;
+  record.tokenSymbol = TokenSymbol.PKTON;
 
   record.amount = amount.toString();
 
@@ -82,7 +82,7 @@ export async function handleStakingBondKtonEvent(event: SubstrateEvent): Promise
 
   record.account = event.extrinsic.extrinsic.signer.toString();
   record.type = StakingType.Bonded;
-  record.tokenSymbol = TokenSymbol.KTON;
+  record.tokenSymbol = TokenSymbol.PKTON;
 
   record.amount = amount.toString();
 
@@ -104,7 +104,7 @@ export async function handleStakingRingUnbondedEvent(event: SubstrateEvent): Pro
 
   record.account = account.toString();
   record.type = StakingType.Unbond;
-  record.tokenSymbol = TokenSymbol.RING;
+  record.tokenSymbol = TokenSymbol.PRING;
 
   record.amount = amount.toString();
 
@@ -126,7 +126,7 @@ export async function handleStakingUnbondRingEvent(event: SubstrateEvent): Promi
 
   record.account = event.extrinsic.extrinsic.signer.toString();
   record.type = StakingType.Unbond;
-  record.tokenSymbol = TokenSymbol.RING;
+  record.tokenSymbol = TokenSymbol.PRING;
 
   record.amount = amount.toString();
 
@@ -148,7 +148,7 @@ export async function handleStakingKtonUnbondedEvent(event: SubstrateEvent): Pro
 
   record.account = account.toString();
   record.type = StakingType.Unbond;
-  record.tokenSymbol = TokenSymbol.KTON;
+  record.tokenSymbol = TokenSymbol.PKTON;
 
   record.amount = amount.toString();
 
@@ -170,7 +170,7 @@ export async function handleStakingUnbondKtonEvent(event: SubstrateEvent): Promi
 
   record.account = event.extrinsic.extrinsic.signer.toString();
   record.type = StakingType.Unbond;
-  record.tokenSymbol = TokenSymbol.KTON;
+  record.tokenSymbol = TokenSymbol.PKTON;
 
   record.amount = amount.toString();
 

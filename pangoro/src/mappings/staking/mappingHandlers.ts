@@ -1,5 +1,5 @@
 import { SubstrateExtrinsic, SubstrateEvent } from "@subql/types";
-import { StakingRecordEntity, StakingType, TokenSymbol } from "../types";
+import { StakingRecordEntity, StakingType, TokenSymbol } from "../../types";
 
 export async function handleStakingBondRingEvent(event: SubstrateEvent): Promise<void> {
   const {
