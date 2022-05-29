@@ -1,3 +1,5 @@
+# *************** Staking Record **************
+
 enum TokenSymbol {
   RING,
   KTON,
@@ -28,4 +30,122 @@ type StakingRecordEntity @entity {
   earlierUnlockBlockTime: String
   earlierUnlockBlockNumber: Int
   earlierUnlockExtrinsicIndex: Int
+}
+
+# *************** Fee Market **************
+
+enum OrderPhase {
+  Created,
+  Delivered,
+}
+
+type PhaseState @jsonField {
+  signer: String!
+  blockTimestamp: Date!
+  blockNumber: Int!
+  extrinsicIndex: Int!
+  eventIndex: Int
+  laneId: String
+}
+
+type UpdateFeeState @jsonField {
+  fee: BigInt!
+
+  blockTimestamp: Date!
+  blockNumber: Int!
+  extrinsicIndex: Int!
+  eventIndex: Int
+}
+
+type RelayerEntity @entity {
+  id: ID!  # address
+
+  feeHistory: [UpdateFeeState]
+
+  totalSlashs: BigInt
+  slashs: [SlashEntity] @derivedFrom(field: "relayer")
+
+  totalRewards: BigInt
+  assignedRewards: [RewardEntity] @derivedFrom(field: "assignedRelayer")
+  deliveredRewards: [RewardEntity] @derivedFrom(field: "deliveredRelayer")
+  confirmedRewards: [RewardEntity] @derivedFrom(field: "confirmedRelayer")
+
+  totalOrders: Int
+  assignedOrders: [OrderEntity] @derivedFrom(field: "assignedRelayer")
+  deliveredOrders: [OrderEntity] @derivedFrom(field: "deliveredRelayer")
+  confirmedOrders: [OrderEntity] @derivedFrom(field: "confirmedRelayer")
+}
+
+type RewardEntity @entity {
+  id: ID!  # nonce
+
+  order: OrderEntity
+
+  assignedRelayer: RelayerEntity
+  deliveredRelayer: RelayerEntity
+  confirmedRelayer: RelayerEntity
+
+  assignedAmount: BigInt
+  deliveredAmount: BigInt
+  confirmedAmount: BigInt
+  treasuryAmount: BigInt
+}
+
+type SlashEntity @entity {
+  id: ID!  # blockNumber-eventIndex
+
+  order: OrderEntity
+
+  blockNumber: Int
+  blockTimestamp: Date
+  extrinsicIndex: Int
+  eventIndex: Int
+
+  laneId: String
+  confirmTime: Int  # block number
+  sentTime: Int  # block number
+  delayTime: Int  # number of block
+
+  amount: BigInt
+  relayer: RelayerEntity
+}
+
+type OrderEntity @entity {
+  id: ID!  # nonce
+
+  fee: BigInt
+  sender: String
+  # sourceTxHash: String
+  # targetTxHash: String
+
+  slashs: [SlashEntity] @derivedFrom(field: "order")
+  rewards: [RewardEntity] @derivedFrom(field: "order")
+
+  slotTime: Int  # number of block
+  outOfSlot: Int  # block number
+  confirmedSlotIndex: Int  # -1: out of slot / 0: #1 / 1: #2 / 2: #3
+
+  phase: OrderPhase
+  atCreated: PhaseState
+  atDelivered: PhaseState
+
+  assignedRelayers: [RelayerEntity]
+
+  assignedRelayer: RelayerEntity
+  deliveredRelayer: RelayerEntity
+  confirmedRelayer: RelayerEntity
+}
+
+type FeeMarketEntity @entity {
+  id: ID!
+
+  totalSlashs: BigInt  # amount
+  totalRewards: BigInt  # amount
+
+  totalOrders: Int
+  totalFinished: Int
+  totalInProgress: Int
+  totalOutOfSlot: Int  # finished but out of slot
+
+  averageSpeed: Int  # millisecond
 }
