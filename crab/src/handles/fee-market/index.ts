@@ -1,5 +1,5 @@
 import { SubstrateEvent } from "@subql/types";
-import { Destination, OrderPhase, FeeMarketEntity, RelayerEntity, OrderEntity } from "../../types";
+import { Destination, OrderPhase, RewardEntity, FeeMarketEntity, RelayerEntity, OrderEntity } from "../../types";
 import { Option, Vec, u64, u32 } from "@polkadot/types";
 import { AccountId, Balance, BlockNumber } from "@polkadot/types/interfaces";
 import { ITuple } from "@polkadot/types-codec/types";
@@ -26,6 +26,8 @@ export const handleOrderCreateEvent = async (event: SubstrateEvent, dest: Destin
     },
   } = event;
 
+  const destMsgId = `${dest}-${messageNonce.toString()}`;
+
   const signer = event.extrinsic.extrinsic.signer.toString();
   const blockNumber = event.block.block.header.number.toNumber();
   const blockTimestamp = event.block.timestamp;
@@ -48,8 +50,7 @@ export const handleOrderCreateEvent = async (event: SubstrateEvent, dest: Destin
   }
 
   // 3. save order entity
-  const orderId = `${dest}-${messageNonce}`;
-  const orderRecord = (await OrderEntity.get(orderId)) || new OrderEntity(orderId);
+  const orderRecord = (await OrderEntity.get(destMsgId)) || new OrderEntity(destMsgId);
   orderRecord.fee = (fee as Balance).toBigInt();
   orderRecord.sender = signer;
   orderRecord.slotTime = (api.consts[getFeeMarketModule(dest)].slot as u32).toNumber();
@@ -85,9 +86,9 @@ export const handleOrderFinishEvent = async (event: SubstrateEvent, dest: Destin
   const eventIndex = event.idx;
 
   for (let nonce = begin.toNumber(); nonce <= end.toNumber(); nonce++) {
-    const orderId = `${dest}-${nonce}`;
+    const destMsgId = `${dest}-${nonce}`;
 
-    const orderRecord = await OrderEntity.get(orderId);
+    const orderRecord = await OrderEntity.get(destMsgId);
     const feeMarketRecord = (await FeeMarketEntity.get(dest)) || new FeeMarketEntity(dest);
 
     if (!orderRecord) {
@@ -127,6 +128,96 @@ export const handleOrderFinishEvent = async (event: SubstrateEvent, dest: Destin
     feeMarketRecord.averageSpeed = (averageSpeed + speed) / 2;
 
     await orderRecord.save();
+    await feeMarketRecord.save();
+  }
+};
+
+/**
+ * Order Reward
+ */
+export const handleOrderRewardEvent = async (event: SubstrateEvent, dest: Destination): Promise<void> => {
+  const {
+    event: {
+      data: [laneId, messageNonce, rewards],
+    },
+  } = event;
+
+  const destMsgId = `${dest}-${messageNonce.toString()}`;
+
+  const { to_slot_relayer, to_message_relayer, to_confirm_relayer, to_treasury } = rewards as unknown as {
+    to_slot_relayer: Option<ITuple<[AccountId, Balance]>>;
+    to_message_relayer: Option<ITuple<[AccountId, Balance]>>;
+    to_confirm_relayer: Option<ITuple<[AccountId, Balance]>>;
+    to_treasury: Option<Balance>;
+  };
+
+  const [assigned, assignedReward] = to_slot_relayer.unwrap();
+  const [delivered, deliveredReward] = to_message_relayer.unwrap();
+  const [confirmed, confirmedReward] = to_confirm_relayer.unwrap();
+
+  const assignedRelayerId = assigned.toString();
+  const deliveredRelayerId = delivered.toString();
+  const confirmedRelayerId = confirmed.toString();
+
+  const assignedAmount = assignedReward.toBigInt();
+  const deliveredAmount = deliveredReward.toBigInt();
+  const confirmedAmount = confirmedReward.toBigInt();
+  const treasuryAmount = to_treasury.unwrap().toBigInt();
+
+  const signer = event.extrinsic.extrinsic.signer.toString();
+  const blockNumber = event.block.block.header.number.toNumber();
+  const blockTimestamp = event.block.timestamp;
+  const extrinsicIndex = event.extrinsic.idx;
+  const eventIndex = event.idx;
+
+  const orderRecord = await OrderEntity.get(destMsgId);
+
+  if (orderRecord) {
+    // 1. save relayers entity
+    const assignedRelayerRecord = (await RelayerEntity.get(assignedRelayerId)) || new RelayerEntity(assignedRelayerId);
+    const deliveredRelayerRecord =
+      (await RelayerEntity.get(deliveredRelayerId)) || new RelayerEntity(deliveredRelayerId);
+    const confirmedRelayerRecord =
+      (await RelayerEntity.get(confirmedRelayerId)) || new RelayerEntity(confirmedRelayerId);
+
+    assignedRelayerRecord.totalRewards = (assignedRelayerRecord.totalRewards || BigInt(0)) + assignedAmount;
+    deliveredRelayerRecord.totalRewards = (deliveredRelayerRecord.totalRewards || BigInt(0)) + deliveredAmount;
+    confirmedRelayerRecord.totalRewards = (confirmedRelayerRecord.totalRewards || BigInt(0)) + confirmedAmount;
+
+    await assignedRelayerRecord.save();
+    await deliveredRelayerRecord.save();
+    await confirmedRelayerRecord.save();
+
+    // 2. save reward entity
+    const rewardRecord = new RewardEntity(destMsgId);
+    rewardRecord.orderId = destMsgId;
+    rewardRecord.assignedRelayerId = assignedRelayerId;
+    rewardRecord.deliveredRelayerId = deliveredRelayerId;
+    rewardRecord.confirmedRelayerId = confirmedRelayerId;
+    rewardRecord.assignedAmount = assignedAmount;
+    rewardRecord.deliveredAmount = deliveredAmount;
+    rewardRecord.confirmedAmount = confirmedAmount;
+    rewardRecord.treasuryAmount = treasuryAmount;
+    rewardRecord.atPhase = {
+      signer,
+      blockTimestamp,
+      blockNumber,
+      extrinsicIndex,
+      eventIndex,
+      laneId: laneId.toString(),
+    };
+    await rewardRecord.save();
+
+    // 3. save order entity
+    orderRecord.assignedRelayerId = assignedRelayerId;
+    orderRecord.deliveredRelayerId = deliveredRelayerId;
+    orderRecord.confirmedRelayerId = confirmedRelayerId;
+    await orderRecord.save();
+
+    // 4. save fee market entity
+    const feeMarketRecord = await FeeMarketEntity.get(dest);
+    feeMarketRecord.totalRewards =
+      (feeMarketRecord.totalRewards || BigInt(0)) + assignedAmount + deliveredAmount + confirmedAmount;
     await feeMarketRecord.save();
   }
 };

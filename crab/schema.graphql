@@ -51,7 +51,7 @@ enum OrderPhase {
   Delivered,
 }
 
-type PhaseCommon @jsonField {
+type StateCommon @jsonField {
   signer: String!
   blockTimestamp: Date!
   blockNumber: Int!
@@ -92,6 +92,8 @@ type RewardEntity @entity {
   id: ID!  # destination-nonce
 
   order: OrderEntity
+
+  atPhase: StateCommon
 
   assignedRelayer: RelayerEntity
   deliveredRelayer: RelayerEntity
@@ -138,8 +140,8 @@ type OrderEntity @entity {
   confirmedSlotIndex: Int  # -1: out of slot / 0: #1 / 1: #2 / 2: #3
 
   phase: OrderPhase
-  atCreated: PhaseCommon
-  atDelivered: PhaseCommon
+  atCreated: StateCommon
+  atDelivered: StateCommon
 
   assignedRelayers: [String]  # relayer address
 
