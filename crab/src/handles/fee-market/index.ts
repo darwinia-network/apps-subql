@@ -300,3 +300,37 @@ export const handleOrderSlashEvent = async (event: SubstrateEvent, dest: Destina
   feeMarketRecord.totalSlashs = (feeMarketRecord.totalSlashs || BigInt(0)) + slashAmount;
   await feeMarketRecord.save();
 };
+
+/**
+ * Fee Update
+ */
+export const handleFeeUpdateEvent = async (event: SubstrateEvent, dest: Destination): Promise<void> => {
+  const {
+    event: {
+      data: [account_id, new_fee],
+    },
+  } = event;
+
+  const accountId = (account_id as AccountId).toString();
+  const newFee = (new_fee as Balance).toBigInt();
+
+  const blockNumber = event.block.block.header.number.toNumber();
+  const blockTimestamp = event.block.timestamp;
+  const extrinsicIndex = event.extrinsic.idx;
+  const eventIndex = event.idx;
+
+  const recordId = `${dest}-${accountId}`;
+  const record = (await RelayerEntity.get(recordId)) || new RelayerEntity(recordId);
+
+  record.feeHistory = (record.feeHistory || []).concat([
+    {
+      fee: newFee,
+      blockTimestamp,
+      blockNumber,
+      extrinsicIndex,
+      eventIndex,
+    },
+  ]);
+
+  await record.save();
+};
