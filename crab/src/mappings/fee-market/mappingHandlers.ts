@@ -6,7 +6,7 @@ import {
   handleOrderRewardEvent,
   handleOrderSlashEvent,
   handleFeeUpdateEvent,
-} from "../../handles/fee-market";
+} from "../../handlers/fee-market";
 
 // Order Create
 
