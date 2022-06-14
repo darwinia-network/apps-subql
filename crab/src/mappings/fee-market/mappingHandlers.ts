@@ -1,54 +1,29 @@
 import { SubstrateEvent } from "@subql/types";
 import { Balance, BlockNumber } from "@polkadot/types/interfaces";
-import { FeeMarketEntity, OrderEntity, RelayerEntity, SlashEntity, OrderPhase } from "../../types";
+import { handleOrderCreateEvent, handleOrderFinishEvent } from "../../handles/fee-market";
+import { FeeMarketEntity, OrderEntity, RelayerEntity, SlashEntity, OrderPhase, Destination } from "../../types";
 
 const FEE_MARKET_ENTITY_ID = "fee-market-entity-id";
 
-export async function handleFeeMarketOrderCreatedEvent(event: SubstrateEvent): Promise<void> {
-  // https://github.com/darwinia-network/darwinia-bridges-substrate/pull/89
-  const {
-    event: {
-      data: [laneId, messageNonce, fee, assignedRelayers, outOfSlot],
-    },
-  } = event;
+// Order Create
 
-  const signer = event.extrinsic.extrinsic.signer.toString();
-  const blockNumber = event.block.block.header.number.toNumber();
-  const blockTimestamp = event.block.timestamp;
-  const extrinsicIndex = event.extrinsic.idx;
-  const eventIndex = event.idx;
+export const handleToDarwiniaOrderCreateEvent = async (event: SubstrateEvent): Promise<void> => {
+  handleOrderCreateEvent(event, Destination.Darwinia);
+};
 
-  const orderRecord = new OrderEntity(messageNonce.toString());
-  const feeMarketRecord =
-    (await FeeMarketEntity.get(FEE_MARKET_ENTITY_ID)) || new FeeMarketEntity(FEE_MARKET_ENTITY_ID);
+export const handleToCrabParachainOrderCreateEvent = async (event: SubstrateEvent): Promise<void> => {
+  handleOrderCreateEvent(event, Destination.CrabParachain);
+};
 
-  orderRecord.fee = (fee as Balance).toBigInt();
-  orderRecord.sender = signer;
+// Order Finish
 
-  orderRecord.slotTime = Number(api.consts.feeMarket.slot);
-  orderRecord.outOfSlot = (outOfSlot as BlockNumber).toNumber();
+export const handleToDarwiniaOrderFinishEvent = async (event: SubstrateEvent): Promise<void> => {
+  handleOrderFinishEvent(event, Destination.Darwinia);
+};
 
-  orderRecord.phase = OrderPhase.Created;
-  orderRecord.atCreated = {
-    signer,
-    blockTimestamp,
-    blockNumber,
-    extrinsicIndex,
-    eventIndex,
-    laneId: laneId.toString(),
-  };
-
-  // TODO: relayer entity create
-  orderRecord.assignedRelayersId = assignedRelayers as unknown as string[];
-
-  const { totalOrders = 0, totalInProgress = 0 } = feeMarketRecord;
-
-  feeMarketRecord.totalInProgress = totalOrders + 1;
-  feeMarketRecord.totalInProgress = totalInProgress + 1;
-
-  await orderRecord.save();
-  await feeMarketRecord.save();
-}
+export const handleToCrabParachainOrderFinishEvent = async (event: SubstrateEvent): Promise<void> => {
+  handleOrderFinishEvent(event, Destination.CrabParachain);
+};
 
 export async function handleMessagesDeliveredEvent(event: SubstrateEvent): Promise<void> {
   const {

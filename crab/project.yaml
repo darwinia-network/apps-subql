@@ -74,6 +74,11 @@ dataSources:
             method: tryClaimDepositsWithPunish
             success: true
         # Fee Market
+        - handler: handleFeeMarketOrderCreatedEvent
+          kind: substrate/EventHandler
+          filter:
+            module: feeMarket
+            method: OrderCreated
         - handler: handleMessagesDeliveredEvent
           kind: substrate/EventHandler
           filter:
@@ -89,11 +94,6 @@ dataSources:
           filter:
             module: feeMarket
             method: FeeMarketSlash
-        - handler: handleFeeMarketOrderCreatedEvent
-          kind: substrate/EventHandler
-          filter:
-            module: feeMarket
-            method: OrderCreated
         - handler: handleFeeMarketOrderRewardEvent
           kind: substrate/EventHandler
           filter:
