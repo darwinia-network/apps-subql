@@ -1,7 +1,15 @@
 import { SubstrateEvent } from "@subql/types";
-import { Destination, OrderPhase, RewardEntity, FeeMarketEntity, RelayerEntity, OrderEntity } from "../../types";
-import { Option, Vec, u64, u32 } from "@polkadot/types";
-import { AccountId, Balance, BlockNumber } from "@polkadot/types/interfaces";
+import {
+  Destination,
+  OrderPhase,
+  SlashEntity,
+  RewardEntity,
+  FeeMarketEntity,
+  RelayerEntity,
+  OrderEntity,
+} from "../../types";
+import { Option, Vec, u128, u64, u32, U8aFixed } from "@polkadot/types";
+import { AccountId, AccountId32, Balance, BlockNumber } from "@polkadot/types/interfaces";
 import { ITuple } from "@polkadot/types-codec/types";
 
 const getFeeMarketModule = (dest: Destination): string => {
@@ -220,4 +228,75 @@ export const handleOrderRewardEvent = async (event: SubstrateEvent, dest: Destin
       (feeMarketRecord.totalRewards || BigInt(0)) + assignedAmount + deliveredAmount + confirmedAmount;
     await feeMarketRecord.save();
   }
+};
+
+/**
+ * Order Slash
+ */
+export const handleOrderSlashEvent = async (event: SubstrateEvent, dest: Destination): Promise<void> => {
+  const {
+    event: {
+      data: [report],
+    },
+  } = event;
+
+  const { account_id, amount, confirm_time, delay_time, lane, message, sent_time } = report as unknown as {
+    account_id: AccountId32;
+    amount: u128;
+    confirm_time: Option<u32>;
+    delay_time: Option<u32>;
+    lane: U8aFixed;
+    message: u64;
+    sent_time: u32;
+  };
+
+  const relayerId = account_id.toString();
+  const confirmTime = confirm_time.unwrap().toNumber();
+  const sentTime = sent_time.toNumber();
+  const delayTime = delay_time.unwrap().toNumber();
+  const laneId = lane.toString();
+  const nonce = message.toString();
+  const slashAmount = amount.toBigInt();
+
+  const signer = event.extrinsic.extrinsic.signer.toString();
+  const blockNumber = event.block.block.header.number.toNumber();
+  const blockTimestamp = event.block.timestamp;
+  const extrinsicIndex = event.extrinsic.idx;
+  const eventIndex = event.idx;
+
+  const destMsgId = `${dest}-${nonce}`;
+  const destMsgEvtId = `${destMsgId}-${eventIndex}`;
+
+  // 1. save relayer entity
+  const relayerRecord = (await RelayerEntity.get(relayerId)) || new RelayerEntity(relayerId);
+  relayerRecord.totalSlashs = (relayerRecord.totalSlashs || BigInt(0)) + slashAmount;
+  await relayerRecord.save();
+
+  // 2. save order entity
+  if (!(await OrderEntity.get(destMsgId))) {
+    await new OrderEntity(destMsgId).save();
+  }
+
+  // 3. save slash entity
+  const slashRecord = new SlashEntity(destMsgEvtId);
+  slashRecord.orderId = destMsgId;
+  slashRecord.atPhase = {
+    signer,
+    blockTimestamp,
+    blockNumber,
+    extrinsicIndex,
+    eventIndex,
+    laneId: laneId,
+  };
+  slashRecord.confirmTime = confirmTime;
+  slashRecord.sentTime = sentTime;
+  slashRecord.delayTime = delayTime;
+  slashRecord.amount = slashAmount;
+  slashRecord.relayerId = relayerId;
+  await slashRecord.save();
+
+  // 4. save fee market entity
+  const feeMarketRecord = (await FeeMarketEntity.get(dest)) || new FeeMarketEntity(dest);
+  feeMarketRecord.totalSlashs = (feeMarketRecord.totalSlashs || BigInt(0)) + slashAmount;
+  await feeMarketRecord.save();
 };

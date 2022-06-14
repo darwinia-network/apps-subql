@@ -106,16 +106,12 @@ type RewardEntity @entity {
 }
 
 type SlashEntity @entity {
-  id: ID!  # destination-blockNumber-eventIndex
+  id: ID!  # destination-nonce-eventIndex
 
   order: OrderEntity
 
-  blockNumber: Int
-  blockTimestamp: Date
-  extrinsicIndex: Int
-  eventIndex: Int
+  atPhase: StateCommon
 
-  laneId: String
   confirmTime: Int  # block number
   sentTime: Int  # block number
   delayTime: Int  # number of block
