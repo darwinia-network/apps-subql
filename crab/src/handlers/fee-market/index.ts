@@ -34,8 +34,6 @@ export const handleOrderCreateEvent = async (event: SubstrateEvent, dest: Destin
     },
   } = event;
 
-  const destMsgId = `${dest}-${messageNonce.toString()}`;
-
   const signer = event.extrinsic.extrinsic.signer.toString();
   const blockNumber = event.block.block.header.number.toNumber();
   const blockTimestamp = event.block.timestamp;
@@ -58,7 +56,8 @@ export const handleOrderCreateEvent = async (event: SubstrateEvent, dest: Destin
   }
 
   // 3. save order entity
-  const orderRecord = (await OrderEntity.get(destMsgId)) || new OrderEntity(destMsgId);
+  const orderRecordId = `${dest}-${messageNonce.toString()}`;
+  const orderRecord = new OrderEntity(orderRecordId);
   orderRecord.fee = (fee as Balance).toBigInt();
   orderRecord.sender = signer;
   orderRecord.slotTime = (api.consts[getFeeMarketModule(dest)].slot as u32).toNumber();
@@ -94,12 +93,12 @@ export const handleOrderFinishEvent = async (event: SubstrateEvent, dest: Destin
   const eventIndex = event.idx;
 
   for (let nonce = begin.toNumber(); nonce <= end.toNumber(); nonce++) {
-    const destMsgId = `${dest}-${nonce}`;
+    const orderRecordId = `${dest}-${nonce}`;
 
-    const orderRecord = await OrderEntity.get(destMsgId);
-    const feeMarketRecord = (await FeeMarketEntity.get(dest)) || new FeeMarketEntity(dest);
+    const orderRecord = await OrderEntity.get(orderRecordId);
+    const feeMarketRecord = await FeeMarketEntity.get(dest);
 
-    if (!orderRecord) {
+    if (!orderRecord || !feeMarketRecord) {
       continue;
     }
 
@@ -117,13 +116,13 @@ export const handleOrderFinishEvent = async (event: SubstrateEvent, dest: Destin
     };
 
     const speed = blockTimestamp.getTime() - orderCreateTimestamp.getTime();
-    const { totalFinished = 0, totalOutOfSlot = 0, averageSpeed = speed } = feeMarketRecord;
+    const { totalFinished = 0, totalOutOfSlot = 0, totalInProgress = 0, averageSpeed = speed } = feeMarketRecord;
 
     if (blockNumber >= outOfSlot) {
       orderRecord.confirmedSlotIndex = -1;
       feeMarketRecord.totalOutOfSlot = totalOutOfSlot + 1;
     } else {
-      for (let i = 0; (i = 20); i++) {
+      for (let i = 0; i < 20; i++) {
         // suppose there are at most 20 slots
         if (blockNumber <= orderCreateBlockNumber + slotTime * (i + 1)) {
           orderRecord.confirmedSlotIndex = i;
@@ -132,6 +131,7 @@ export const handleOrderFinishEvent = async (event: SubstrateEvent, dest: Destin
       }
     }
 
+    feeMarketRecord.totalInProgress = totalInProgress - 1;
     feeMarketRecord.totalFinished = totalFinished + 1;
     feeMarketRecord.averageSpeed = (averageSpeed + speed) / 2;
 
@@ -142,6 +142,7 @@ export const handleOrderFinishEvent = async (event: SubstrateEvent, dest: Destin
 
 /**
  * Order Reward
+ * https://github.com/darwinia-network/darwinia-bridges-substrate/pull/89
  */
 export const handleOrderRewardEvent = async (event: SubstrateEvent, dest: Destination): Promise<void> => {
   const {
@@ -149,8 +150,6 @@ export const handleOrderRewardEvent = async (event: SubstrateEvent, dest: Destin
       data: [laneId, messageNonce, rewards],
     },
   } = event;
-
-  const destMsgId = `${dest}-${messageNonce.toString()}`;
 
   const { to_slot_relayer, to_message_relayer, to_confirm_relayer, to_treasury } = rewards as unknown as {
     to_slot_relayer: Option<ITuple<[AccountId, Balance]>>;
@@ -178,15 +177,21 @@ export const handleOrderRewardEvent = async (event: SubstrateEvent, dest: Destin
   const extrinsicIndex = event.extrinsic.idx;
   const eventIndex = event.idx;
 
-  const orderRecord = await OrderEntity.get(destMsgId);
+  const orderRecordId = `${dest}-${messageNonce.toString()}`;
+  const orderRecord = await OrderEntity.get(orderRecordId);
 
   if (orderRecord) {
     // 1. save relayers entity
-    const assignedRelayerRecord = (await RelayerEntity.get(assignedRelayerId)) || new RelayerEntity(assignedRelayerId);
+    const assignedRelayerRecordId = `${dest}-${assignedRelayerId}`;
+    const deliveredRelayerRecordId = `${dest}-${deliveredRelayerId}`;
+    const confirmedRelayerRecordId = `${dest}-${confirmedRelayerId}`;
+
+    const assignedRelayerRecord =
+      (await RelayerEntity.get(assignedRelayerRecordId)) || new RelayerEntity(assignedRelayerRecordId);
     const deliveredRelayerRecord =
-      (await RelayerEntity.get(deliveredRelayerId)) || new RelayerEntity(deliveredRelayerId);
+      (await RelayerEntity.get(deliveredRelayerRecordId)) || new RelayerEntity(deliveredRelayerRecordId);
     const confirmedRelayerRecord =
-      (await RelayerEntity.get(confirmedRelayerId)) || new RelayerEntity(confirmedRelayerId);
+      (await RelayerEntity.get(confirmedRelayerRecordId)) || new RelayerEntity(confirmedRelayerRecordId);
 
     assignedRelayerRecord.totalRewards = (assignedRelayerRecord.totalRewards || BigInt(0)) + assignedAmount;
     deliveredRelayerRecord.totalRewards = (deliveredRelayerRecord.totalRewards || BigInt(0)) + deliveredAmount;
@@ -197,11 +202,12 @@ export const handleOrderRewardEvent = async (event: SubstrateEvent, dest: Destin
     await confirmedRelayerRecord.save();
 
     // 2. save reward entity
-    const rewardRecord = new RewardEntity(destMsgId);
-    rewardRecord.orderId = destMsgId;
-    rewardRecord.assignedRelayerId = assignedRelayerId;
-    rewardRecord.deliveredRelayerId = deliveredRelayerId;
-    rewardRecord.confirmedRelayerId = confirmedRelayerId;
+    const rewardRecordId = `${dest}-${messageNonce.toString()}`;
+    const rewardRecord = new RewardEntity(rewardRecordId);
+    rewardRecord.orderId = orderRecordId;
+    rewardRecord.assignedRelayerId = assignedRelayerRecordId;
+    rewardRecord.deliveredRelayerId = deliveredRelayerRecordId;
+    rewardRecord.confirmedRelayerId = confirmedRelayerRecordId;
     rewardRecord.assignedAmount = assignedAmount;
     rewardRecord.deliveredAmount = deliveredAmount;
     rewardRecord.confirmedAmount = confirmedAmount;
@@ -217,9 +223,9 @@ export const handleOrderRewardEvent = async (event: SubstrateEvent, dest: Destin
     await rewardRecord.save();
 
     // 3. save order entity
-    orderRecord.assignedRelayerId = assignedRelayerId;
-    orderRecord.deliveredRelayerId = deliveredRelayerId;
-    orderRecord.confirmedRelayerId = confirmedRelayerId;
+    orderRecord.assignedRelayerId = assignedRelayerRecordId;
+    orderRecord.deliveredRelayerId = deliveredRelayerRecordId;
+    orderRecord.confirmedRelayerId = confirmedRelayerRecordId;
     await orderRecord.save();
 
     // 4. save fee market entity
@@ -264,41 +270,41 @@ export const handleOrderSlashEvent = async (event: SubstrateEvent, dest: Destina
   const extrinsicIndex = event.extrinsic.idx;
   const eventIndex = event.idx;
 
-  const destMsgId = `${dest}-${nonce}`;
-  const destMsgEvtId = `${destMsgId}-${eventIndex}`;
+  const orderRecordId = `${dest}-${nonce}`;
+  const relayerRecordId = `${dest}-${relayerId}`;
 
-  // 1. save relayer entity
-  const relayerRecord = (await RelayerEntity.get(relayerId)) || new RelayerEntity(relayerId);
-  relayerRecord.totalSlashs = (relayerRecord.totalSlashs || BigInt(0)) + slashAmount;
-  await relayerRecord.save();
+  const orderRecord = await OrderEntity.get(orderRecordId);
+  const relayerRecord = await RelayerEntity.get(relayerRecordId);
 
-  // 2. save order entity
-  if (!(await OrderEntity.get(destMsgId))) {
-    await new OrderEntity(destMsgId).save();
+  if (orderRecord && relayerRecord) {
+    // 1. save relayer entity
+    relayerRecord.totalSlashs = (relayerRecord.totalSlashs || BigInt(0)) + slashAmount;
+    await relayerRecord.save();
+
+    // 2. save slash entity
+    const slashRecordId = `${dest}-${nonce}-${eventIndex}`;
+    const slashRecord = new SlashEntity(slashRecordId);
+    slashRecord.orderId = orderRecordId;
+    slashRecord.atPhase = {
+      signer,
+      blockTimestamp,
+      blockNumber,
+      extrinsicIndex,
+      eventIndex,
+      laneId: laneId,
+    };
+    slashRecord.confirmTime = confirmTime;
+    slashRecord.sentTime = sentTime;
+    slashRecord.delayTime = delayTime;
+    slashRecord.amount = slashAmount;
+    slashRecord.relayerId = relayerRecordId;
+    await slashRecord.save();
+
+    // 3. save fee market entity
+    const feeMarketRecord = (await FeeMarketEntity.get(dest)) || new FeeMarketEntity(dest);
+    feeMarketRecord.totalSlashs = (feeMarketRecord.totalSlashs || BigInt(0)) + slashAmount;
+    await feeMarketRecord.save();
   }
-
-  // 3. save slash entity
-  const slashRecord = new SlashEntity(destMsgEvtId);
-  slashRecord.orderId = destMsgId;
-  slashRecord.atPhase = {
-    signer,
-    blockTimestamp,
-    blockNumber,
-    extrinsicIndex,
-    eventIndex,
-    laneId: laneId,
-  };
-  slashRecord.confirmTime = confirmTime;
-  slashRecord.sentTime = sentTime;
-  slashRecord.delayTime = delayTime;
-  slashRecord.amount = slashAmount;
-  slashRecord.relayerId = relayerId;
-  await slashRecord.save();
-
-  // 4. save fee market entity
-  const feeMarketRecord = (await FeeMarketEntity.get(dest)) || new FeeMarketEntity(dest);
-  feeMarketRecord.totalSlashs = (feeMarketRecord.totalSlashs || BigInt(0)) + slashAmount;
-  await feeMarketRecord.save();
 };
 
 /**
@@ -311,7 +317,7 @@ export const handleFeeUpdateEvent = async (event: SubstrateEvent, dest: Destinat
     },
   } = event;
 
-  const accountId = (account_id as AccountId).toString();
+  const relayerId = (account_id as AccountId).toString();
   const newFee = (new_fee as Balance).toBigInt();
 
   const blockNumber = event.block.block.header.number.toNumber();
@@ -319,10 +325,10 @@ export const handleFeeUpdateEvent = async (event: SubstrateEvent, dest: Destinat
   const extrinsicIndex = event.extrinsic.idx;
   const eventIndex = event.idx;
 
-  const recordId = `${dest}-${accountId}`;
-  const record = (await RelayerEntity.get(recordId)) || new RelayerEntity(recordId);
+  const relayerRecordId = `${dest}-${relayerId}`;
+  const relayerRecord = (await RelayerEntity.get(relayerRecordId)) || new RelayerEntity(relayerRecordId);
 
-  record.feeHistory = (record.feeHistory || []).concat([
+  relayerRecord.feeHistory = (relayerRecord.feeHistory || []).concat([
     {
       fee: newFee,
       blockTimestamp,
@@ -332,5 +338,5 @@ export const handleFeeUpdateEvent = async (event: SubstrateEvent, dest: Destinat
     },
   ]);
 
-  await record.save();
+  await relayerRecord.save();
 };

@@ -154,7 +154,7 @@ type FeeMarketEntity @entity {
 
   totalOrders: Int
   totalFinished: Int
-  totalInProgress: Int
+  totalInProgress: Int  # real time
   totalOutOfSlot: Int  # finished but out of slot
 
   averageSpeed: Int  # millisecond
