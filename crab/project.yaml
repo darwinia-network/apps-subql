@@ -27,52 +27,52 @@ dataSources:
       file: ./dist/index.js
       handlers:
         ################# Staking Record #################
-        - handler: handleStakingBondRingEvent
-          kind: substrate/EventHandler
-          filter:
-            module: staking
-            method: BondRing
-        - handler: handleStakingRingBondedEvent
-          kind: substrate/EventHandler
-          filter:
-            module: staking
-            method: RingBonded
-        - handler: handleStakingKtonBondedEvent
-          kind: substrate/EventHandler
-          filter:
-            module: staking
-            method: KtonBonded
-        - handler: handleStakingBondKtonEvent
-          kind: substrate/EventHandler
-          filter:
-            module: staking
-            method: BondKton
-        - handler: handleStakingRingUnbondedEvent
-          kind: substrate/EventHandler
-          filter:
-            module: staking
-            method: RingUnbonded
-        - handler: handleStakingUnbondRingEvent
-          kind: substrate/EventHandler
-          filter:
-            module: staking
-            method: UnbondRing
-        - handler: handleStakingKtonUnbondedEvent
-          kind: substrate/EventHandler
-          filter:
-            module: staking
-            method: KtonUnbonded
-        - handler: handleStakingUnbondKtonEvent
-          kind: substrate/EventHandler
-          filter:
-            module: staking
-            method: UnbondKton
-        - handler: handleTryClaimDepositsWithPunishCall
-          kind: substrate/CallHandler
-          filter:
-            module: staking
-            method: tryClaimDepositsWithPunish
-            success: true
+        # - handler: handleStakingBondRingEvent
+        #   kind: substrate/EventHandler
+        #   filter:
+        #     module: staking
+        #     method: BondRing
+        # - handler: handleStakingRingBondedEvent
+        #   kind: substrate/EventHandler
+        #   filter:
+        #     module: staking
+        #     method: RingBonded
+        # - handler: handleStakingKtonBondedEvent
+        #   kind: substrate/EventHandler
+        #   filter:
+        #     module: staking
+        #     method: KtonBonded
+        # - handler: handleStakingBondKtonEvent
+        #   kind: substrate/EventHandler
+        #   filter:
+        #     module: staking
+        #     method: BondKton
+        # - handler: handleStakingRingUnbondedEvent
+        #   kind: substrate/EventHandler
+        #   filter:
+        #     module: staking
+        #     method: RingUnbonded
+        # - handler: handleStakingUnbondRingEvent
+        #   kind: substrate/EventHandler
+        #   filter:
+        #     module: staking
+        #     method: UnbondRing
+        # - handler: handleStakingKtonUnbondedEvent
+        #   kind: substrate/EventHandler
+        #   filter:
+        #     module: staking
+        #     method: KtonUnbonded
+        # - handler: handleStakingUnbondKtonEvent
+        #   kind: substrate/EventHandler
+        #   filter:
+        #     module: staking
+        #     method: UnbondKton
+        # - handler: handleTryClaimDepositsWithPunishCall
+        #   kind: substrate/CallHandler
+        #   filter:
+        #     module: staking
+        #     method: tryClaimDepositsWithPunish
+        #     success: true
         ################# Fee Market #################
         # Order Create
         - handler: handleToDarwiniaOrderCreateEvent
