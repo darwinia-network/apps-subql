@@ -34,12 +34,24 @@ type StakingRecordEntity @entity {
 
 # *************** Fee Market **************
 
+enum Destination {
+  Crab,
+  Darwinia,
+  Pangolin,
+  Pangoro,
+
+  CrabParachain,
+  PangolinParachain,
+
+  Default,
+}
+
 enum OrderPhase {
   Created,
   Delivered,
 }
 
-type PhaseState @jsonField {
+type StateCommon @jsonField {
   signer: String!
   blockTimestamp: Date!
   blockNumber: Int!
@@ -48,19 +60,22 @@ type PhaseState @jsonField {
   laneId: String
 }
 
-type UpdateFeeState @jsonField {
-  fee: BigInt!
+type NewFeeEntity @entity {
+  id: ID!  # destination-blockNumber-eventIndex
 
-  blockTimestamp: Date!
-  blockNumber: Int!
-  extrinsicIndex: Int!
+  fee: BigInt
+  relayer: RelayerEntity
+
+  blockTimestamp: Date
+  blockNumber: Int
+  extrinsicIndex: Int
   eventIndex: Int
 }
 
 type RelayerEntity @entity {
-  id: ID!  # address
+  id: ID!  # destination-address
 
-  feeHistory: [UpdateFeeState]
+  feeHistory: [NewFeeEntity] @derivedFrom(field: "relayer")
 
   totalSlashs: BigInt
   slashs: [SlashEntity] @derivedFrom(field: "relayer")
@@ -77,9 +92,11 @@ type RelayerEntity @entity {
 }
 
 type RewardEntity @entity {
-  id: ID!  # nonce
+  id: ID!  # destination-nonce
 
   order: OrderEntity
+
+  atPhase: StateCommon
 
   assignedRelayer: RelayerEntity
   deliveredRelayer: RelayerEntity
@@ -92,16 +109,12 @@ type RewardEntity @entity {
 }
 
 type SlashEntity @entity {
-  id: ID!  # blockNumber-eventIndex
+  id: ID!  # destination-nonce-eventIndex
 
   order: OrderEntity
 
-  blockNumber: Int
-  blockTimestamp: Date
-  extrinsicIndex: Int
-  eventIndex: Int
+  atPhase: StateCommon
 
-  laneId: String
   confirmTime: Int  # block number
   sentTime: Int  # block number
   delayTime: Int  # number of block
@@ -111,7 +124,7 @@ type SlashEntity @entity {
 }
 
 type OrderEntity @entity {
-  id: ID!  # nonce
+  id: ID!  # destination-nonce
 
   fee: BigInt
   sender: String
@@ -126,10 +139,10 @@ type OrderEntity @entity {
   confirmedSlotIndex: Int  # -1: out of slot / 0: #1 / 1: #2 / 2: #3
 
   phase: OrderPhase
-  atCreated: PhaseState
-  atDelivered: PhaseState
+  atCreated: StateCommon
+  atDelivered: StateCommon
 
-  assignedRelayers: [RelayerEntity]
+  assignedRelayers: [String]  # relayer address
 
   assignedRelayer: RelayerEntity
   deliveredRelayer: RelayerEntity
@@ -137,14 +150,14 @@ type OrderEntity @entity {
 }
 
 type FeeMarketEntity @entity {
-  id: ID!
+  id: ID!  # use the value of Destination
 
   totalSlashs: BigInt  # amount
   totalRewards: BigInt  # amount
 
   totalOrders: Int
   totalFinished: Int
-  totalInProgress: Int
+  totalInProgress: Int  # real time
   totalOutOfSlot: Int  # finished but out of slot
 
   averageSpeed: Int  # millisecond

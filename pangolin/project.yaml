@@ -26,7 +26,7 @@ dataSources:
     mapping:
       file: ./dist/index.js
       handlers:
-        # Staking Record
+        ################# Staking Record #################
         - handler: handleStakingBondRingEvent
           kind: substrate/EventHandler
           filter:
@@ -73,29 +73,59 @@ dataSources:
             module: staking
             method: tryClaimDepositsWithPunish
             success: true
-        # Fee Market
-        - handler: handleMessagesDeliveredEvent
+        ################# Fee Market #################
+        # Order Create
+        - handler: handleToPangoroOrderCreateEvent
           kind: substrate/EventHandler
           filter:
-            module: bridgeDarwiniaMessages
-            method: MessagesDelivered
-        - handler: handleFeeMarketUpdateRelayFeeEvent
-          kind: substrate/EventHandler
-          filter:
-            module: feeMarket
-            method: UpdateRelayFee
-        - handler: handleFeeMarketSlashEvent
-          kind: substrate/EventHandler
-          filter:
-            module: feeMarket
-            method: FeeMarketSlash
-        - handler: handleFeeMarketOrderCreatedEvent
-          kind: substrate/EventHandler
-          filter:
-            module: feeMarket
+            module: pangoroFeeMarket
             method: OrderCreated
-        - handler: handleFeeMarketOrderRewardEvent
+        - handler: handleToPangolinParachainOrderCreateEvent
           kind: substrate/EventHandler
           filter:
-            module: feeMarket
+            module: pangolinParachainFeeMarket
+            method: OrderCreated
+        # Order Finish
+        - handler: handleToPangoroOrderFinishEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgePangoroMessages
+            method: MessagesDelivered
+        - handler: handleToPangolinParachainOrderFinishEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgePangolinParachainMessages
+            method: MessagesDelivered
+        # Order Reward
+        - handler: handleToPangoroOrderRewardEvent
+          kind: substrate/EventHandler
+          filter:
+            module: pangoroFeeMarket
             method: OrderReward
+        - handler: handleToPangolinParachainOrderRewardEvent
+          kind: substrate/EventHandler
+          filter:
+            module: pangolinParachainFeeMarket
+            method: OrderReward
+        # Order Slash
+        - handler: handleToPangoroOrderSlashEvent
+          kind: substrate/EventHandler
+          filter:
+            module: pangoroFeeMarket
+            method: FeeMarketSlash
+        - handler: handleToPangolinParachainOrderSlashEvent
+          kind: substrate/EventHandler
+          filter:
+            module: pangolinParachainFeeMarket
+            method: FeeMarketSlash
+        # Fee Update
+        - handler: handleToPangoroFeeUpdateEvent
+          kind: substrate/EventHandler
+          filter:
+            module: pangoroFeeMarket
+            method: UpdateRelayFee
+        - handler: handleToPangolinParachainFeeUpdateEvent
+          kind: substrate/EventHandler
+          filter:
+            module: pangolinParachainFeeMarket
+            method: UpdateRelayFee
