@@ -26,7 +26,7 @@ dataSources:
     mapping:
       file: ./dist/index.js
       handlers:
-        # Staking Record
+        ################# Staking Record #################
         - handler: handleStakingBondRingEvent
           kind: substrate/EventHandler
           filter:
@@ -73,29 +73,59 @@ dataSources:
             module: staking
             method: tryClaimDepositsWithPunish
             success: true
-        # Fee Market
-        - handler: handleFeeMarketOrderCreatedEvent
+        ################# Fee Market #################
+        # Order Create
+        - handler: handleToDarwiniaOrderCreateEvent
           kind: substrate/EventHandler
           filter:
-            module: feeMarket
+            module: darwiniaFeeMarket
             method: OrderCreated
-        - handler: handleMessagesDeliveredEvent
+        - handler: handleToCrabParachainOrderCreateEvent
+          kind: substrate/EventHandler
+          filter:
+            module: crabParachainFeeMarket
+            method: OrderCreated
+        # Order Finish
+        - handler: handleToDarwiniaOrderFinishEvent
           kind: substrate/EventHandler
           filter:
             module: bridgeDarwiniaMessages
             method: MessagesDelivered
-        - handler: handleFeeMarketUpdateRelayFeeEvent
+        - handler: handleToCrabParachainOrderFinishEvent
           kind: substrate/EventHandler
           filter:
-            module: feeMarket
-            method: UpdateRelayFee
-        - handler: handleFeeMarketSlashEvent
+            module: bridgeCrabParachainMessages
+            method: MessagesDelivered
+        # Order Reward
+        - handler: handleToDarwiniaOrderRewardEvent
           kind: substrate/EventHandler
           filter:
-            module: feeMarket
-            method: FeeMarketSlash
-        - handler: handleFeeMarketOrderRewardEvent
-          kind: substrate/EventHandler
-          filter:
-            module: feeMarket
+            module: darwiniaFeeMarket
             method: OrderReward
+        - handler: handleToCrabParachainOrderRewardEvent
+          kind: substrate/EventHandler
+          filter:
+            module: crabParachainFeeMarket
+            method: OrderReward
+        # Order Slash
+        - handler: handleToDarwiniaOrderSlashEvent
+          kind: substrate/EventHandler
+          filter:
+            module: darwiniaFeeMarket
+            method: FeeMarketSlash
+        - handler: handleToCrabParachainOrderSlashEvent
+          kind: substrate/EventHandler
+          filter:
+            module: crabParachainFeeMarket
+            method: FeeMarketSlash
+        # Fee Update
+        - handler: handleToDarwiniaFeeUpdateEvent
+          kind: substrate/EventHandler
+          filter:
+            module: darwiniaFeeMarket
+            method: UpdateRelayFee
+        - handler: handleToCrabParachainFeeUpdateEvent
+          kind: substrate/EventHandler
+          filter:
+            module: crabParachainFeeMarket
+            method: UpdateRelayFee

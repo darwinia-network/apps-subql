@@ -11,49 +11,49 @@ import {
 // Order Create
 
 export const handleToDarwiniaOrderCreateEvent = async (event: SubstrateEvent): Promise<void> => {
-  handleOrderCreateEvent(event, Destination.Darwinia);
+  await handleOrderCreateEvent(event, Destination.Darwinia);
 };
 
 export const handleToCrabParachainOrderCreateEvent = async (event: SubstrateEvent): Promise<void> => {
-  handleOrderCreateEvent(event, Destination.CrabParachain);
+  await handleOrderCreateEvent(event, Destination.CrabParachain);
 };
 
 // Order Finish
 
 export const handleToDarwiniaOrderFinishEvent = async (event: SubstrateEvent): Promise<void> => {
-  handleOrderFinishEvent(event, Destination.Darwinia);
+  await handleOrderFinishEvent(event, Destination.Darwinia);
 };
 
 export const handleToCrabParachainOrderFinishEvent = async (event: SubstrateEvent): Promise<void> => {
-  handleOrderFinishEvent(event, Destination.CrabParachain);
+  await handleOrderFinishEvent(event, Destination.CrabParachain);
 };
 
 // Order Reward
 
 export const handleToDarwiniaOrderRewardEvent = async (event: SubstrateEvent): Promise<void> => {
-  handleOrderRewardEvent(event, Destination.Darwinia);
+  await handleOrderRewardEvent(event, Destination.Darwinia);
 };
 
 export const handleToCrabParachainOrderRewardEvent = async (event: SubstrateEvent): Promise<void> => {
-  handleOrderRewardEvent(event, Destination.CrabParachain);
+  await handleOrderRewardEvent(event, Destination.CrabParachain);
 };
 
 // Order Slash
 
 export const handleToDarwiniaOrderSlashEvent = async (event: SubstrateEvent): Promise<void> => {
-  handleOrderSlashEvent(event, Destination.Darwinia);
+  await handleOrderSlashEvent(event, Destination.Darwinia);
 };
 
 export const handleToCrabParachainOrderSlashEvent = async (event: SubstrateEvent): Promise<void> => {
-  handleOrderSlashEvent(event, Destination.CrabParachain);
+  await handleOrderSlashEvent(event, Destination.CrabParachain);
 };
 
 // Fee Update
 
 export const handleToDarwiniaFeeUpdateEvent = async (event: SubstrateEvent): Promise<void> => {
-  handleFeeUpdateEvent(event, Destination.Darwinia);
+  await handleFeeUpdateEvent(event, Destination.Darwinia);
 };
 
 export const handleToCrabParachainFeeUpdateEvent = async (event: SubstrateEvent): Promise<void> => {
-  handleFeeUpdateEvent(event, Destination.CrabParachain);
+  await handleFeeUpdateEvent(event, Destination.CrabParachain);
 };

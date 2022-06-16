@@ -60,19 +60,22 @@ type StateCommon @jsonField {
   laneId: String
 }
 
-type UpdateFee @jsonField {
-  fee: BigInt!
+type NewFeeEntity @entity {
+  id: ID!  # destination-blockNumber-eventIndex
 
-  blockTimestamp: Date!
-  blockNumber: Int!
-  extrinsicIndex: Int!
+  fee: BigInt
+  relayer: RelayerEntity
+
+  blockTimestamp: Date
+  blockNumber: Int
+  extrinsicIndex: Int
   eventIndex: Int
 }
 
 type RelayerEntity @entity {
   id: ID!  # destination-address
 
-  feeHistory: [UpdateFee]
+  feeHistory: [NewFeeEntity] @derivedFrom(field: "relayer")
 
   totalSlashs: BigInt
   slashs: [SlashEntity] @derivedFrom(field: "relayer")
