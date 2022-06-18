@@ -57,10 +57,10 @@ type NewFeeEntity @entity {
   fee: BigInt
   relayer: RelayerEntity
 
-  blockTimestamp: Date
-  blockNumber: Int
-  extrinsicIndex: Int
-  eventIndex: Int
+  newfeeTime: Date!  # block timestamp
+  newfeeBlock: Int!  # block number
+  newfeeExtrinsic: Int!  # extrinsic index
+  newfeeEvent: Int!  # event index
 }
 
 type RelayerEntity @entity {

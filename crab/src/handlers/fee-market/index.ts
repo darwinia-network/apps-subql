@@ -293,13 +293,11 @@ export const handleFeeUpdateEvent = async (event: SubstrateEvent, dest: Destinat
     },
   } = event;
 
-  const blockNumber = event.block.block.header.number.toNumber();
-  const blockTimestamp = event.block.timestamp;
-  const extrinsicIndex = event.extrinsic.idx;
-  const eventIndex = event.idx;
+  const newfeeBlock = event.block.block.header.number.toNumber();
+  const newfeeEvent = event.idx;
 
   const relayerRecordId = `${dest}-${accountId.toString()}`;
-  const newFeeRecordId = `${dest}-${blockNumber}-${eventIndex}`;
+  const newFeeRecordId = `${dest}-${newfeeBlock}-${newfeeEvent}`;
 
   // 1. save relayer record
   if (!(await RelayerEntity.get(relayerRecordId))) {
@@ -310,9 +308,9 @@ export const handleFeeUpdateEvent = async (event: SubstrateEvent, dest: Destinat
   const newFeeRecord = new NewFeeEntity(newFeeRecordId);
   newFeeRecord.fee = (newFee as Balance).toBigInt();
   newFeeRecord.relayerId = relayerRecordId;
-  newFeeRecord.blockTimestamp = blockTimestamp;
-  newFeeRecord.blockNumber = blockNumber;
-  newFeeRecord.extrinsicIndex = extrinsicIndex;
-  newFeeRecord.eventIndex = eventIndex;
+  newFeeRecord.newfeeTime = event.block.timestamp;
+  newFeeRecord.newfeeBlock = newfeeBlock;
+  newFeeRecord.newfeeExtrinsic = event.extrinsic.idx;
+  newFeeRecord.newfeeEvent = newfeeEvent;
   await newFeeRecord.save();
 };
