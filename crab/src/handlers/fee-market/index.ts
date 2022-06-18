@@ -35,12 +35,6 @@ export const handleOrderCreateEvent = async (event: SubstrateEvent, dest: Destin
     },
   } = event;
 
-  const signer = event.extrinsic.extrinsic.signer.toString();
-  const blockNumber = event.block.block.header.number.toNumber();
-  const blockTimestamp = event.block.timestamp;
-  const extrinsicIndex = event.extrinsic.idx;
-  const eventIndex = event.idx;
-
   // 1. save fee market record
   const feeMarketRecord = (await FeeMarketEntity.get(dest)) || new FeeMarketEntity(dest);
   const { totalOrders, totalInProgress } = feeMarketRecord;
@@ -60,18 +54,14 @@ export const handleOrderCreateEvent = async (event: SubstrateEvent, dest: Destin
   const orderRecordId = `${dest}-${messageNonce.toString()}`;
   const orderRecord = new OrderEntity(orderRecordId);
   orderRecord.fee = (fee as Balance).toBigInt();
-  orderRecord.sender = signer;
   orderRecord.slotTime = (api.consts[getFeeMarketModule(dest)].slot as u32).toNumber();
   orderRecord.outOfSlot = (outOfSlot as Option<BlockNumber>).unwrap().toNumber();
   orderRecord.phase = OrderPhase.Created;
-  orderRecord.atCreated = {
-    signer,
-    blockTimestamp,
-    blockNumber,
-    extrinsicIndex,
-    eventIndex,
-    laneId: laneId.toString(),
-  };
+  orderRecord.createTime = event.block.timestamp;
+  orderRecord.createBlock = event.block.block.header.number.toNumber();
+  orderRecord.createExtrinsic = event.extrinsic.idx;
+  orderRecord.createEvent = event.idx;
+  orderRecord.createLaneId = laneId.toString();
   orderRecord.assignedRelayers = (assignedRelayers as Vec<AccountId>).map((relayer) => relayer.toString());
   await orderRecord.save();
 };
@@ -87,11 +77,8 @@ export const handleOrderFinishEvent = async (event: SubstrateEvent, dest: Destin
   } = event;
   const { begin, end } = message as unknown as { begin: u64; end: u64 };
 
-  const signer = event.extrinsic.extrinsic.signer.toString();
-  const blockTimestamp = event.block.timestamp;
-  const blockNumber = event.block.block.header.number.toNumber();
-  const extrinsicIndex = event.extrinsic.idx;
-  const eventIndex = event.idx;
+  const finishTime = event.block.timestamp;
+  const finishBlock = event.block.block.header.number.toNumber();
 
   for (let nonce = begin.toNumber(); nonce <= end.toNumber(); nonce++) {
     const orderRecordId = `${dest}-${nonce}`;
@@ -103,29 +90,25 @@ export const handleOrderFinishEvent = async (event: SubstrateEvent, dest: Destin
       continue;
     }
 
-    const { slotTime, outOfSlot } = orderRecord;
-    const { blockNumber: orderCreateBlockNumber, blockTimestamp: orderCreateTimestamp } = orderRecord.atCreated;
+    const { slotTime, outOfSlot, createTime, createBlock } = orderRecord;
 
     orderRecord.phase = OrderPhase.Delivered;
-    orderRecord.atDelivered = {
-      signer,
-      blockTimestamp,
-      blockNumber,
-      extrinsicIndex,
-      eventIndex,
-      laneId: laneId.toString(),
-    };
+    orderRecord.finishTime = finishTime;
+    orderRecord.finishBlock = finishBlock;
+    orderRecord.finishExtrinsic = event.extrinsic.idx;
+    orderRecord.finishEvent = event.idx;
+    orderRecord.finishLaneId = laneId.toString();
 
-    const speed = blockTimestamp.getTime() - new Date(orderCreateTimestamp).getTime();
+    const speed = finishTime.getTime() - new Date(createTime).getTime();
     const { totalFinished, totalOutOfSlot, totalInProgress, averageSpeed } = feeMarketRecord;
 
-    if (blockNumber >= outOfSlot) {
+    if (finishBlock >= outOfSlot) {
       orderRecord.confirmedSlotIndex = -1;
       feeMarketRecord.totalOutOfSlot = (totalOutOfSlot || 0) + 1;
     } else {
       for (let i = 0; i < 20; i++) {
         // suppose there are at most 20 slots
-        if (blockNumber <= orderCreateBlockNumber + slotTime * (i + 1)) {
+        if (finishBlock <= createBlock + slotTime * (i + 1)) {
           orderRecord.confirmedSlotIndex = i;
           break;
         }

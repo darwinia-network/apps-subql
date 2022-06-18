@@ -127,7 +127,7 @@ type OrderEntity @entity {
   id: ID!  # destination-nonce
 
   fee: BigInt
-  sender: String
+  # sender: String
   # sourceTxHash: String
   # targetTxHash: String
 
@@ -139,8 +139,18 @@ type OrderEntity @entity {
   confirmedSlotIndex: Int  # -1: out of slot / 0: #1 / 1: #2 / 2: #3
 
   phase: OrderPhase
-  atCreated: StateCommon
-  atDelivered: StateCommon
+
+  createTime: Date!  # block timestamp
+  createBlock: Int!  # block number
+  createExtrinsic: Int!  # extrinsic index
+  createEvent: Int!  # event index
+  createLaneId: String!
+
+  finishTime: Date
+  finishBlock: Int
+  finishExtrinsic: Int
+  finishEvent: Int
+  finishLaneId: String
 
   assignedRelayers: [String]  # relayer address
 
