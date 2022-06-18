@@ -245,12 +245,6 @@ export const handleOrderSlashEvent = async (event: SubstrateEvent, dest: Destina
   const nonce = message.toString();
   const slashAmount = amount.toBigInt();
 
-  const signer = event.extrinsic.extrinsic.signer.toString();
-  const blockNumber = event.block.block.header.number.toNumber();
-  const blockTimestamp = event.block.timestamp;
-  const extrinsicIndex = event.extrinsic.idx;
-  const eventIndex = event.idx;
-
   const orderRecordId = `${dest}-${nonce}`;
   const relayerRecordId = `${dest}-${accountId.toString()}`;
 
@@ -263,17 +257,14 @@ export const handleOrderSlashEvent = async (event: SubstrateEvent, dest: Destina
     await relayerRecord.save();
 
     // 2. save slash record
-    const slashRecordId = `${dest}-${nonce}-${eventIndex}`;
+    const slashRecordId = `${dest}-${nonce}-${event.idx}`;
     const slashRecord = new SlashEntity(slashRecordId);
     slashRecord.orderId = orderRecordId;
-    slashRecord.atPhase = {
-      signer,
-      blockTimestamp,
-      blockNumber,
-      extrinsicIndex,
-      eventIndex,
-      laneId: lane.toString(),
-    };
+    slashRecord.slashTime = event.block.timestamp;
+    slashRecord.slashBlock = event.block.block.header.number.toNumber();
+    slashRecord.slashExtrinsic = event.extrinsic.idx;
+    slashRecord.slashEvent = event.idx;
+    slashRecord.slashLaneId = lane.toString();
     if (confirmTime.isSome) {
       slashRecord.confirmTime = confirmTime.unwrap().toNumber();
     }

@@ -51,15 +51,6 @@ enum OrderPhase {
   Delivered,
 }
 
-type StateCommon @jsonField {
-  signer: String!
-  blockTimestamp: Date!
-  blockNumber: Int!
-  extrinsicIndex: Int!
-  eventIndex: Int
-  laneId: String
-}
-
 type NewFeeEntity @entity {
   id: ID!  # destination-blockNumber-eventIndex
 
@@ -117,7 +108,11 @@ type SlashEntity @entity {
 
   order: OrderEntity
 
-  atPhase: StateCommon
+  slashTime: Date!  # block timestamp
+  slashBlock: Int!  # block number
+  slashExtrinsic: Int!  # extrinsic index
+  slashEvent: Int!  # event index
+  slashLaneId: String!
 
   confirmTime: Int  # block number
   sentTime: Int  # block number
