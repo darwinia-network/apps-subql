@@ -96,7 +96,11 @@ type RewardEntity @entity {
 
   order: OrderEntity
 
-  atPhase: StateCommon
+  rewardTime: Date!  # block timestamp
+  rewardBlock: Int!  # block number
+  rewardExtrinsic: Int!  # extrinsic index
+  rewardEvent: Int!  # event index
+  rewardLaneId: String!
 
   assignedRelayer: RelayerEntity
   deliveredRelayer: RelayerEntity

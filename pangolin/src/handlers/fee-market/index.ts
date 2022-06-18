@@ -142,12 +142,6 @@ export const handleOrderRewardEvent = async (event: SubstrateEvent, dest: Destin
     toTreasury: Option<Balance>;
   };
 
-  const signer = event.extrinsic.extrinsic.signer.toString();
-  const blockNumber = event.block.block.header.number.toNumber();
-  const blockTimestamp = event.block.timestamp;
-  const extrinsicIndex = event.extrinsic.idx;
-  const eventIndex = event.idx;
-
   const orderRecordId = `${dest}-${messageNonce.toString()}`;
   const orderRecord = await OrderEntity.get(orderRecordId);
 
@@ -213,14 +207,11 @@ export const handleOrderRewardEvent = async (event: SubstrateEvent, dest: Destin
     if (toTreasury.isSome) {
       rewardRecord.treasuryAmount = toTreasury.unwrap().toBigInt();
     }
-    rewardRecord.atPhase = {
-      signer,
-      blockTimestamp,
-      blockNumber,
-      extrinsicIndex,
-      eventIndex,
-      laneId: laneId.toString(),
-    };
+    rewardRecord.rewardTime = event.block.timestamp;
+    rewardRecord.rewardBlock = event.block.block.header.number.toNumber();
+    rewardRecord.rewardExtrinsic = event.extrinsic.idx;
+    rewardRecord.rewardEvent = event.idx;
+    rewardRecord.rewardLaneId = laneId.toString();
     await rewardRecord.save();
 
     // 3. save order record
