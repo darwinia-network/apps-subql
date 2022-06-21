@@ -159,6 +159,7 @@ export const handleOrderRewardEvent = async (event: SubstrateEvent, dest: Destin
       const assignedRelayerRecord =
         (await RelayerEntity.get(assignedRelayerRecordId)) || new RelayerEntity(assignedRelayerRecordId);
 
+      assignedRelayerRecord.totalOrders = (assignedRelayerRecord.totalOrders || 0) + 1;
       assignedRelayerRecord.totalRewards = (assignedRelayerRecord.totalRewards || BigInt(0)) + assignedAmount;
       await assignedRelayerRecord.save();
 
@@ -176,6 +177,7 @@ export const handleOrderRewardEvent = async (event: SubstrateEvent, dest: Destin
       const deliveredRelayerRecord =
         (await RelayerEntity.get(deliveredRelayerRecordId)) || new RelayerEntity(deliveredRelayerRecordId);
 
+      deliveredRelayerRecord.totalOrders = (deliveredRelayerRecord.totalOrders || 0) + 1;
       deliveredRelayerRecord.totalRewards = (deliveredRelayerRecord.totalRewards || BigInt(0)) + deliveredAmount;
       await deliveredRelayerRecord.save();
 
@@ -193,6 +195,7 @@ export const handleOrderRewardEvent = async (event: SubstrateEvent, dest: Destin
       const confirmedRelayerRecord =
         (await RelayerEntity.get(confirmedRelayerRecordId)) || new RelayerEntity(confirmedRelayerRecordId);
 
+      confirmedRelayerRecord.totalOrders = (confirmedRelayerRecord.totalOrders || 0) + 1;
       confirmedRelayerRecord.totalRewards = (confirmedRelayerRecord.totalRewards || BigInt(0)) + confirmedAmount;
       await confirmedRelayerRecord.save();
 
