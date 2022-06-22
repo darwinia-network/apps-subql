@@ -126,7 +126,7 @@ type OrderEntity @entity {
   id: ID!  # destination-nonce
 
   fee: BigInt
-  # sender: String
+  sender: String
   # sourceTxHash: String
   # targetTxHash: String
 
