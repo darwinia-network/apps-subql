@@ -55,6 +55,7 @@ export const handleOrderCreateEvent = async (event: SubstrateEvent, dest: Destin
   const orderRecord = new OrderEntity(orderRecordId);
   orderRecord.fee = (fee as Balance).toBigInt();
   orderRecord.sender = event.extrinsic.extrinsic.signer.toString();
+  orderRecord.sourceTxHash = event.extrinsic.extrinsic.hash.toHex();
   orderRecord.slotTime = (api.consts[getFeeMarketModule(dest)].slot as u32).toNumber();
   orderRecord.outOfSlot = (outOfSlot as Option<BlockNumber>).unwrap().toNumber();
   orderRecord.phase = OrderPhase.Created;
