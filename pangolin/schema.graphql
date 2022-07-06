@@ -122,6 +122,12 @@ type SlashEntity @entity {
   relayer: RelayerEntity
 }
 
+type InProgressOrderEntity @entity {
+  id: ID!  # destination-nonce
+  outOfSlotBlock: Int!
+  isOutOfSlot: Boolean! @index(unique: false)
+}
+
 type OrderEntity @entity {
   id: ID!  # destination-nonce
 

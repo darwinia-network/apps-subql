@@ -8,6 +8,7 @@ import {
   RelayerEntity,
   OrderEntity,
   NewFeeEntity,
+  InProgressOrderEntity,
 } from "../../types";
 import { Option, Vec, u128, u64, u32, U8aFixed } from "@polkadot/types";
 import { AccountId, AccountId32, Balance, BlockNumber } from "@polkadot/types/interfaces";
@@ -50,14 +51,22 @@ export const handleOrderCreateEvent = async (event: SubstrateEvent, dest: Destin
     }
   }
 
-  // 3. save order record
   const orderRecordId = `${dest}-${messageNonce.toString()}`;
+  const orderOutOfSlotBlock = (outOfSlot as Option<BlockNumber>).unwrap().toNumber();
+
+  // 3. save in-progress order
+  const inProgressOrderRecord = new InProgressOrderEntity(orderRecordId);
+  inProgressOrderRecord.outOfSlotBlock = orderOutOfSlotBlock;
+  inProgressOrderRecord.isOutOfSlot = false;
+  await inProgressOrderRecord.save();
+
+  // 4. save order record
   const orderRecord = new OrderEntity(orderRecordId);
   orderRecord.fee = (fee as Balance).toBigInt();
   orderRecord.sender = event.extrinsic.extrinsic.signer.toString();
   orderRecord.sourceTxHash = event.extrinsic.extrinsic.hash.toHex();
   orderRecord.slotTime = (api.consts[getFeeMarketModule(dest)].slot as u32).toNumber();
-  orderRecord.outOfSlot = (outOfSlot as Option<BlockNumber>).unwrap().toNumber();
+  orderRecord.outOfSlot = orderOutOfSlotBlock;
   orderRecord.phase = OrderPhase.Created;
   orderRecord.createTime = event.block.timestamp;
   orderRecord.createBlock = event.block.block.header.number.toNumber();
@@ -87,6 +96,8 @@ export const handleOrderFinishEvent = async (event: SubstrateEvent, dest: Destin
 
     const orderRecord = await OrderEntity.get(orderRecordId);
     const feeMarketRecord = await FeeMarketEntity.get(dest);
+
+    await InProgressOrderEntity.remove(orderRecordId);
 
     if (!orderRecord || !feeMarketRecord) {
       continue;

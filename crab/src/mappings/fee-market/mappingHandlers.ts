@@ -1,5 +1,5 @@
-import { SubstrateEvent } from "@subql/types";
-import { Destination } from "../../types";
+import { SubstrateEvent, SubstrateBlock } from "@subql/types";
+import { Destination, InProgressOrderEntity } from "../../types";
 import {
   handleOrderCreateEvent,
   handleOrderFinishEvent,
@@ -7,6 +7,18 @@ import {
   handleOrderSlashEvent,
   handleFeeUpdateEvent,
 } from "../../handlers/fee-market";
+
+export const handleBlock = async (block: SubstrateBlock): Promise<void> => {
+  const current = block.block.header.number.toNumber();
+  const records = (await InProgressOrderEntity.getByIsOutOfSlot(false)) || [];
+
+  for (let record of records) {
+    if (record.outOfSlotBlock >= current) {
+      record.isOutOfSlot = true;
+      await record.save();
+    }
+  }
+};
 
 // Order Create
 
