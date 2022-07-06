@@ -1,5 +1,5 @@
 import { SubstrateEvent, SubstrateBlock } from "@subql/types";
-import { Destination, InProgressOrderEntity } from "../../types";
+import { Destination, FeeMarketEntity, OrderEntity, OrderStatus } from "../../types";
 import {
   handleOrderCreateEvent,
   handleOrderFinishEvent,
@@ -8,16 +8,34 @@ import {
   handleFeeUpdateEvent,
 } from "../../handlers/fee-market";
 
+const updateOutOfSlot = async (current: number, dest: Destination) => {
+  const feeMarket = await FeeMarketEntity.get(dest);
+
+  if (feeMarket) {
+    const msgs = feeMarket.unfinishOrders || [];
+
+    for (let msg of msgs) {
+      if (current >= msg.outOfSlot) {
+        const order = await OrderEntity.get(`${dest}-${msg.nonce}`);
+        if (order) {
+          order.status = OrderStatus.OutOfSlot;
+          await order.save();
+
+          feeMarket.totalOutOfSlot = (feeMarket.totalOutOfSlot || 0) + 1;
+          feeMarket.totalInProgress = (feeMarket.totalInProgress || 0) - 1;
+        }
+      }
+    }
+
+    await feeMarket.save();
+  }
+};
+
 export const handleBlock = async (block: SubstrateBlock): Promise<void> => {
   const current = block.block.header.number.toNumber();
-  const records = (await InProgressOrderEntity.getByIsOutOfSlot(false)) || [];
 
-  for (let record of records) {
-    if (record.outOfSlotBlock >= current) {
-      record.isOutOfSlot = true;
-      await record.save();
-    }
-  }
+  await updateOutOfSlot(current, Destination.PangolinParachain);
+  await updateOutOfSlot(current, Destination.Pangoro);
 };
 
 // Order Create

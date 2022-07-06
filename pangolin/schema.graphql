@@ -34,6 +34,11 @@ type StakingRecordEntity @entity {
 
 # *************** Fee Market **************
 
+type MsgSlotBlock @jsonField {
+  nonce: String!
+  outOfSlot: Int!
+}
+
 enum Destination {
   Crab,
   Darwinia,
@@ -49,6 +54,12 @@ enum Destination {
 enum OrderPhase {
   Created,
   Delivered,
+}
+
+enum OrderStatus {
+  Finished,
+  InProgress,
+  OutOfSlot,
 }
 
 type NewFeeEntity @entity {
@@ -122,12 +133,6 @@ type SlashEntity @entity {
   relayer: RelayerEntity
 }
 
-type InProgressOrderEntity @entity {
-  id: ID!  # destination-nonce
-  outOfSlotBlock: Int!
-  isOutOfSlot: Boolean! @index(unique: false)
-}
-
 type OrderEntity @entity {
   id: ID!  # destination-nonce
 
@@ -144,6 +149,7 @@ type OrderEntity @entity {
   confirmedSlotIndex: Int  # -1: out of slot / 0: #1 / 1: #2 / 2: #3
 
   phase: OrderPhase
+  status: OrderStatus
 
   createTime: Date!  # block timestamp
   createBlock: Int!  # block number
@@ -170,10 +176,12 @@ type FeeMarketEntity @entity {
   totalSlashs: BigInt  # amount
   totalRewards: BigInt  # amount
 
-  totalOrders: Int
-  totalFinished: Int
+  totalOrders: Int  # totalFinished + totalInProgress + totalOutOfSlot
+  totalFinished: Int  # real time
   totalInProgress: Int  # real time
-  totalOutOfSlot: Int  # finished but out of slot
+  totalOutOfSlot: Int  # real time
+
+  unfinishOrders: [MsgSlotBlock]
 
   averageSpeed: Int  # millisecond
 }

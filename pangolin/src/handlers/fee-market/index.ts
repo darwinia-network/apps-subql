@@ -8,7 +8,7 @@ import {
   RelayerEntity,
   OrderEntity,
   NewFeeEntity,
-  InProgressOrderEntity,
+  OrderStatus,
 } from "../../types";
 import { Option, Vec, u128, u64, u32, U8aFixed } from "@polkadot/types";
 import { AccountId, AccountId32, Balance, BlockNumber } from "@polkadot/types/interfaces";
@@ -36,11 +36,20 @@ export const handleOrderCreateEvent = async (event: SubstrateEvent, dest: Destin
     },
   } = event;
 
+  const nonce = messageNonce.toString();
+  const outOfSlotBlock = (outOfSlot as Option<BlockNumber>).unwrap().toNumber();
+
   // 1. save fee market record
   const feeMarketRecord = (await FeeMarketEntity.get(dest)) || new FeeMarketEntity(dest);
   const { totalOrders, totalInProgress } = feeMarketRecord;
   feeMarketRecord.totalOrders = (totalOrders || 0) + 1;
   feeMarketRecord.totalInProgress = (totalInProgress || 0) + 1;
+  feeMarketRecord.unfinishOrders = (feeMarketRecord.unfinishOrders || []).concat([
+    {
+      nonce,
+      outOfSlot: outOfSlotBlock,
+    },
+  ]);
   await feeMarketRecord.save();
 
   // 2. save relayer record
@@ -51,23 +60,16 @@ export const handleOrderCreateEvent = async (event: SubstrateEvent, dest: Destin
     }
   }
 
-  const orderRecordId = `${dest}-${messageNonce.toString()}`;
-  const orderOutOfSlotBlock = (outOfSlot as Option<BlockNumber>).unwrap().toNumber();
-
-  // 3. save in-progress order
-  const inProgressOrderRecord = new InProgressOrderEntity(orderRecordId);
-  inProgressOrderRecord.outOfSlotBlock = orderOutOfSlotBlock;
-  inProgressOrderRecord.isOutOfSlot = false;
-  await inProgressOrderRecord.save();
-
-  // 4. save order record
+  // 3. save order record
+  const orderRecordId = `${dest}-${nonce}`;
   const orderRecord = new OrderEntity(orderRecordId);
   orderRecord.fee = (fee as Balance).toBigInt();
   orderRecord.sender = event.extrinsic.extrinsic.signer.toString();
   orderRecord.sourceTxHash = event.extrinsic.extrinsic.hash.toHex();
   orderRecord.slotTime = (api.consts[getFeeMarketModule(dest)].slot as u32).toNumber();
-  orderRecord.outOfSlot = orderOutOfSlotBlock;
+  orderRecord.outOfSlot = outOfSlotBlock;
   orderRecord.phase = OrderPhase.Created;
+  orderRecord.status = OrderStatus.InProgress;
   orderRecord.createTime = event.block.timestamp;
   orderRecord.createBlock = event.block.block.header.number.toNumber();
   orderRecord.createExtrinsic = event.extrinsic.idx;
@@ -97,15 +99,14 @@ export const handleOrderFinishEvent = async (event: SubstrateEvent, dest: Destin
     const orderRecord = await OrderEntity.get(orderRecordId);
     const feeMarketRecord = await FeeMarketEntity.get(dest);
 
-    await InProgressOrderEntity.remove(orderRecordId);
-
     if (!orderRecord || !feeMarketRecord) {
       continue;
     }
 
-    const { slotTime, outOfSlot, createTime, createBlock } = orderRecord;
+    const { slotTime, outOfSlot, createTime, createBlock, status } = orderRecord;
 
     orderRecord.phase = OrderPhase.Delivered;
+    orderRecord.status = OrderStatus.Finished;
     orderRecord.finishTime = finishTime;
     orderRecord.finishBlock = finishBlock;
     orderRecord.finishExtrinsic = event.extrinsic.idx;
@@ -113,11 +114,10 @@ export const handleOrderFinishEvent = async (event: SubstrateEvent, dest: Destin
     orderRecord.finishLaneId = laneId.toString();
 
     const speed = finishTime.getTime() - new Date(createTime).getTime();
-    const { totalFinished, totalOutOfSlot, totalInProgress, averageSpeed } = feeMarketRecord;
+    const { totalFinished, totalInProgress, totalOutOfSlot, averageSpeed } = feeMarketRecord;
 
     if (finishBlock >= outOfSlot) {
       orderRecord.confirmedSlotIndex = -1;
-      feeMarketRecord.totalOutOfSlot = (totalOutOfSlot || 0) + 1;
     } else {
       for (let i = 0; i < 20; i++) {
         // suppose there are at most 20 slots
@@ -128,7 +128,12 @@ export const handleOrderFinishEvent = async (event: SubstrateEvent, dest: Destin
       }
     }
 
-    feeMarketRecord.totalInProgress = (totalInProgress || 0) - 1;
+    feeMarketRecord.unfinishOrders = (feeMarketRecord.unfinishOrders || []).filter((o) => o.nonce !== nonce.toString());
+    if (status === OrderStatus.InProgress) {
+      feeMarketRecord.totalInProgress = (totalInProgress || 0) - 1;
+    } else if (status === OrderStatus.OutOfSlot) {
+      feeMarketRecord.totalOutOfSlot = (totalOutOfSlot || 0) - 1;
+    }
     feeMarketRecord.totalFinished = (totalFinished || 0) + 1;
     feeMarketRecord.averageSpeed = averageSpeed ? parseInt(((averageSpeed + speed) / 2).toFixed(0)) : speed;
 
