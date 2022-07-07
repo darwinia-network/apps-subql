@@ -1,8 +1,8 @@
 # *************** Fee Market **************
 
-type MsgSlotBlock @jsonField {
+type MsgOutOfSlot @jsonField {
   nonce: String!
-  outOfSlot: Int!
+  outOfSlot: Int! # block number
 }
 
 enum Destination {
@@ -147,7 +147,7 @@ type FeeMarketEntity @entity {
   totalInProgress: Int  # real time
   totalOutOfSlot: Int  # real time
 
-  unfinishOrders: [MsgSlotBlock]
+  unfinishOrders: [MsgOutOfSlot]
 
   averageSpeed: Int  # millisecond
 }
