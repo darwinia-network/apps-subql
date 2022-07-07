@@ -1,37 +1,3 @@
-# *************** Staking Record **************
-
-enum TokenSymbol {
-  PRING,
-  PKTON,
-}
-
-enum StakingType {
-  Locked,
-  Bonded,
-  Unbond,
-}
-
-type StakingRecordEntity @entity {
-  id: ID!
-
-  account: String! @index(unique: false)
-  type: StakingType
-  tokenSymbol: TokenSymbol
-
-  amount: String
-  startTime: String
-  expireTime: String
-
-  blockTime: String!
-  blockNumber: Int!
-  extrinsicIndex: Int!
-
-  isUnlockEarlier: Boolean
-  earlierUnlockBlockTime: String
-  earlierUnlockBlockNumber: Int
-  earlierUnlockExtrinsicIndex: Int
-}
-
 # *************** Fee Market **************
 
 type MsgSlotBlock @jsonField {
