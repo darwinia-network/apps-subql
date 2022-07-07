@@ -32,10 +32,12 @@ const updateOutOfSlot = async (current: number, dest: Destination) => {
 };
 
 export const handleBlock = async (block: SubstrateBlock): Promise<void> => {
+  const destinations = Object.values(Destination);
   const current = block.block.header.number.toNumber();
 
-  await updateOutOfSlot(current, Destination.PangolinParachain);
-  await updateOutOfSlot(current, Destination.Pangoro);
+  for (const destination of destinations) {
+    await updateOutOfSlot(current, destination);
+  }
 };
 
 // Order Create
