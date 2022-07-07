@@ -17,7 +17,7 @@ const updateOutOfSlot = async (current: number, dest: Destination) => {
     for (let msg of msgs) {
       if (current >= msg.outOfSlot) {
         const order = await OrderEntity.get(`${dest}-${msg.nonce}`);
-        if (order) {
+        if (order && order.status === OrderStatus.InProgress) {
           order.status = OrderStatus.OutOfSlot;
           await order.save();
 
