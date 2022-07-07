@@ -5,7 +5,7 @@
   "author": "JayJay1024 <lygm1062@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "format": "prettier '**/src/**/*.ts' --write",
+    "format": "prettier '**/*.{ts,yaml,graphql,json}' --write",
     "prepare": "husky install"
   },
   "devDependencies": {
@@ -14,6 +14,6 @@
     "prettier": "2.6.2"
   },
   "lint-staged": {
-    "**/src/**/*.ts": "prettier --write"
+    "**/*.{ts,yaml,graphql,json}": "prettier --write"
   }
 }

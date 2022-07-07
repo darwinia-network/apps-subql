@@ -1,14 +1,14 @@
 # *************** Staking Record **************
 
 enum TokenSymbol {
-  ORING,
-  OKTON,
+  ORING
+  OKTON
 }
 
 enum StakingType {
-  Locked,
-  Bonded,
-  Unbond,
+  Locked
+  Bonded
+  Unbond
 }
 
 type StakingRecordEntity @entity {
@@ -35,8 +35,8 @@ type StakingRecordEntity @entity {
 # *************** Fee Market **************
 
 enum OrderPhase {
-  Created,
-  Delivered,
+  Created
+  Delivered
 }
 
 type PhaseState @jsonField {
@@ -58,8 +58,7 @@ type UpdateFeeState @jsonField {
 }
 
 type RelayerEntity @entity {
-  id: ID!  # address
-
+  id: ID! # address
   feeHistory: [UpdateFeeState]
 
   totalSlashs: BigInt
@@ -77,8 +76,7 @@ type RelayerEntity @entity {
 }
 
 type RewardEntity @entity {
-  id: ID!  # nonce
-
+  id: ID! # nonce
   order: OrderEntity
 
   assignedRelayer: RelayerEntity
@@ -92,8 +90,7 @@ type RewardEntity @entity {
 }
 
 type SlashEntity @entity {
-  id: ID!  # blockNumber-eventIndex
-
+  id: ID! # blockNumber-eventIndex
   order: OrderEntity
 
   blockNumber: Int
@@ -102,17 +99,15 @@ type SlashEntity @entity {
   eventIndex: Int
 
   laneId: String
-  confirmTime: Int  # block number
-  sentTime: Int  # block number
-  delayTime: Int  # number of block
-
+  confirmTime: Int # block number
+  sentTime: Int # block number
+  delayTime: Int # number of block
   amount: BigInt
   relayer: RelayerEntity
 }
 
 type OrderEntity @entity {
-  id: ID!  # nonce
-
+  id: ID! # nonce
   fee: BigInt
   sender: String
   # sourceTxHash: String
@@ -121,10 +116,9 @@ type OrderEntity @entity {
   slashs: [SlashEntity] @derivedFrom(field: "order")
   rewards: [RewardEntity] @derivedFrom(field: "order")
 
-  slotTime: Int  # number of block
-  outOfSlot: Int  # block number
-  confirmedSlotIndex: Int  # -1: out of slot / 0: #1 / 1: #2 / 2: #3
-
+  slotTime: Int # number of block
+  outOfSlot: Int # block number
+  confirmedSlotIndex: Int # -1: out of slot / 0: #1 / 1: #2 / 2: #3
   phase: OrderPhase
   atCreated: PhaseState
   atDelivered: PhaseState
@@ -139,13 +133,11 @@ type OrderEntity @entity {
 type FeeMarketEntity @entity {
   id: ID!
 
-  totalSlashs: BigInt  # amount
-  totalRewards: BigInt  # amount
-
+  totalSlashs: BigInt # amount
+  totalRewards: BigInt # amount
   totalOrders: Int
   totalFinished: Int
   totalInProgress: Int
-  totalOutOfSlot: Int  # finished but out of slot
-
-  averageSpeed: Int  # millisecond
+  totalOutOfSlot: Int # finished but out of slot
+  averageSpeed: Int # millisecond
 }

@@ -3,21 +3,21 @@ name: apps-subql
 version: 1.0.0
 runner:
   node:
-    name: '@subql/node'
+    name: "@subql/node"
     version: 1.0.0
   query:
-    name: '@subql/query'
+    name: "@subql/query"
     version: 0.24.0
 description: >-
   This project can be use as a starting point for developing your SubQuery
   project
-repository: 'https://github.com/subquery/subql-starter'
+repository: "https://github.com/subquery/subql-starter"
 schema:
   file: ./schema.graphql
 network:
-  genesisHash: '0xce44bd16fc276f9e457b452577b6c2678e57768260012af127479fed806da7e7'
+  genesisHash: "0xce44bd16fc276f9e457b452577b6c2678e57768260012af127479fed806da7e7"
   endpoint: wss://pangolin-rpc.darwinia.network
-  dictionary: 'https://api.subquery.network/sq/darwinia-network/pangolin-dictionary'
+  dictionary: "https://api.subquery.network/sq/darwinia-network/pangolin-dictionary"
   chaintypes:
     file: ./types.yaml
 dataSources:

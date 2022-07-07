@@ -6,43 +6,41 @@ type MsgOutOfSlot @jsonField {
 }
 
 enum Destination {
-  Crab,
-  Darwinia,
-  Pangolin,
-  Pangoro,
+  Crab
+  Darwinia
+  Pangolin
+  Pangoro
 
-  CrabParachain,
-  PangolinParachain,
+  CrabParachain
+  PangolinParachain
 
-  Default,
+  Default
 }
 
 enum OrderPhase {
-  Created,
-  Delivered,
+  Created
+  Delivered
 }
 
 enum OrderStatus {
-  Finished,
-  InProgress,
-  OutOfSlot,
+  Finished
+  InProgress
+  OutOfSlot
 }
 
 type NewFeeEntity @entity {
-  id: ID!  # destination-blockNumber-eventIndex
-
+  id: ID! # destination-blockNumber-eventIndex
   fee: BigInt
   relayer: RelayerEntity
 
-  newfeeTime: Date!  # block timestamp
-  newfeeBlock: Int!  # block number
-  newfeeExtrinsic: Int!  # extrinsic index
-  newfeeEvent: Int!  # event index
+  newfeeTime: Date! # block timestamp
+  newfeeBlock: Int! # block number
+  newfeeExtrinsic: Int! # extrinsic index
+  newfeeEvent: Int! # event index
 }
 
 type RelayerEntity @entity {
-  id: ID!  # destination-address
-
+  id: ID! # destination-address
   feeHistory: [NewFeeEntity] @derivedFrom(field: "relayer")
 
   totalSlashs: BigInt
@@ -60,14 +58,13 @@ type RelayerEntity @entity {
 }
 
 type RewardEntity @entity {
-  id: ID!  # destination-nonce
-
+  id: ID! # destination-nonce
   order: OrderEntity
 
-  rewardTime: Date!  # block timestamp
-  rewardBlock: Int!  # block number
-  rewardExtrinsic: Int!  # extrinsic index
-  rewardEvent: Int!  # event index
+  rewardTime: Date! # block timestamp
+  rewardBlock: Int! # block number
+  rewardExtrinsic: Int! # extrinsic index
+  rewardEvent: Int! # event index
   rewardLaneId: String!
 
   assignedRelayer: RelayerEntity
@@ -81,27 +78,24 @@ type RewardEntity @entity {
 }
 
 type SlashEntity @entity {
-  id: ID!  # destination-nonce-eventIndex
-
+  id: ID! # destination-nonce-eventIndex
   order: OrderEntity
 
-  slashTime: Date!  # block timestamp
-  slashBlock: Int!  # block number
-  slashExtrinsic: Int!  # extrinsic index
-  slashEvent: Int!  # event index
+  slashTime: Date! # block timestamp
+  slashBlock: Int! # block number
+  slashExtrinsic: Int! # extrinsic index
+  slashEvent: Int! # event index
   slashLaneId: String!
 
-  confirmTime: Int  # block number
-  sentTime: Int  # block number
-  delayTime: Int  # number of block
-
+  confirmTime: Int # block number
+  sentTime: Int # block number
+  delayTime: Int # number of block
   amount: BigInt
   relayer: RelayerEntity
 }
 
 type OrderEntity @entity {
-  id: ID!  # destination-nonce
-
+  id: ID! # destination-nonce
   fee: BigInt
   sender: String
   sourceTxHash: String
@@ -110,17 +104,16 @@ type OrderEntity @entity {
   slashs: [SlashEntity] @derivedFrom(field: "order")
   rewards: [RewardEntity] @derivedFrom(field: "order")
 
-  slotTime: Int  # number of block
-  outOfSlot: Int  # block number
-  confirmedSlotIndex: Int  # -1: out of slot / 0: #1 / 1: #2 / 2: #3
-
+  slotTime: Int # number of block
+  outOfSlot: Int # block number
+  confirmedSlotIndex: Int # -1: out of slot / 0: #1 / 1: #2 / 2: #3
   phase: OrderPhase
   status: OrderStatus
 
-  createTime: Date!  # block timestamp
-  createBlock: Int!  # block number
-  createExtrinsic: Int!  # extrinsic index
-  createEvent: Int!  # event index
+  createTime: Date! # block timestamp
+  createBlock: Int! # block number
+  createExtrinsic: Int! # extrinsic index
+  createEvent: Int! # event index
   createLaneId: String!
 
   finishTime: Date
@@ -129,25 +122,21 @@ type OrderEntity @entity {
   finishEvent: Int
   finishLaneId: String
 
-  assignedRelayers: [String]  # relayer address
-
+  assignedRelayers: [String] # relayer address
   assignedRelayer: RelayerEntity
   deliveredRelayer: RelayerEntity
   confirmedRelayer: RelayerEntity
 }
 
 type FeeMarketEntity @entity {
-  id: ID!  # use the value of Destination
-
-  totalSlashs: BigInt  # amount
-  totalRewards: BigInt  # amount
-
-  totalOrders: Int  # totalFinished + totalInProgress + totalOutOfSlot
-  totalFinished: Int  # real time
-  totalInProgress: Int  # real time
-  totalOutOfSlot: Int  # real time
-
+  id: ID! # use the value of Destination
+  totalSlashs: BigInt # amount
+  totalRewards: BigInt # amount
+  totalOrders: Int # totalFinished + totalInProgress + totalOutOfSlot
+  totalFinished: Int # real time
+  totalInProgress: Int # real time
+  totalOutOfSlot: Int # real time
   unfinishOrders: [MsgOutOfSlot]
 
-  averageSpeed: Int  # millisecond
+  averageSpeed: Int # millisecond
 }

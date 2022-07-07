@@ -14,16 +14,16 @@ types:
     providers: RefCount
     sufficients: RefCount
   Announcement: ProxyAnnouncement
-  AuthorityId: '[u8;32]'
-  AuthoritySignature: '[u8;64]'
-  BabeEpochConfiguration: 'Null'
-  BalanceInfo: '{}'
+  AuthorityId: "[u8;32]"
+  AuthoritySignature: "[u8;64]"
+  BabeEpochConfiguration: "Null"
+  BalanceInfo: "{}"
   BalanceLock:
     id: LockIdentifier
     lockFor: LockFor
     reasons: Reasons
-  Bloom: '[u8; 256; Bloom]'
-  BridgeMessageId: '(LaneId, MessageNonce)'
+  Bloom: "[u8; 256; Bloom]"
+  BridgeMessageId: "(LaneId, MessageNonce)"
   ChainProperties:
     ss58Format: Option<u8>
     tokenDecimals: Option<Vec<u32>>
@@ -33,7 +33,7 @@ types:
   DepositId: U256
   EcdsaAddress: EthereumAddress
   EcdsaMessage: H256
-  EcdsaSignature: '[u8; 65; EcdsaSignature]'
+  EcdsaSignature: "[u8; 65; EcdsaSignature]"
   ElectionCompute:
     _enum:
       - OnChain
@@ -67,8 +67,8 @@ types:
     blockHash: Option<H256>
   EthereumNetwork:
     _enum:
-      Mainnet: 'Null'
-      Ropsten: 'Null'
+      Mainnet: "Null"
+      Ropsten: "Null"
   EthereumReceipt:
     gasUsed: U256
     logBloom: Bloom
@@ -95,7 +95,7 @@ types:
     others: Vec<IndividualExposure>
   Fee:
     amount: Balance
-  H128: '[u8; 16; H128]'
+  H128: "[u8; 16; H128]"
   IndividualExposure:
     who: AccountId
     ringBalance: Compact<Balance>
@@ -108,7 +108,7 @@ types:
     _enum:
       Common: Common
       Staking: StakingLock
-  LogEntry: '{}'
+  LogEntry: "{}"
   MMRProof:
     memberLeafIndex: u64
     lastLeafIndex: u64
@@ -119,7 +119,7 @@ types:
   MMRRoot: Hash
   MappedRing: u128
   MerkleMountainRangeRootLog:
-    prefix: '[u8; 4; Prefix]'
+    prefix: "[u8; 4; Prefix]"
     ParentMmrRoot: Hash
   MessageId: (LaneId, MessageNonce)
   MmrNodesPruningConfiguration:
@@ -130,7 +130,7 @@ types:
     mmrRoot: Hash
     signatures: Vec<(AccountId, EcdsaSignature)>
   NodeIndex: u64
-  OpCode: '[u8; 4; OpCode]'
+  OpCode: "[u8; 4; OpCode]"
   Order:
     lane: LaneId
     message: MessageNonce
@@ -155,12 +155,12 @@ types:
     valid_range: BlockNumber
   ProxyType:
     _enum:
-      Any: 'Null'
-      NonTransfer: 'Null'
-      Governance: 'Null'
-      Staking: 'Null'
-      IdentityJudgement: 'Null'
-      EthereumBridge: 'Null'
+      Any: "Null"
+      NonTransfer: "Null"
+      Governance: "Null"
+      Staking: "Null"
+      IdentityJudgement: "Null"
+      EthereumBridge: "Null"
   RKT:
     r: Balance
     k: Balance
@@ -171,8 +171,8 @@ types:
       - All
   RedeemFor:
     _enum:
-      Token: 'Null'
-      Deposit: 'Null'
+      Token: "Null"
+      Deposit: "Null"
   Relayer:
     id: AccountId
     collateral: Balance
@@ -227,15 +227,15 @@ types:
     unbondings: Vec<Unbonding>
   Status:
     _enum:
-      Free: 'Null'
-      Reserved: 'Null'
+      Free: "Null"
+      Reserved: "Null"
   Term: BlockNumber
   TimeDepositItem:
     value: Compact<Balance>
     startTime: Compact<TsInMs>
     expireTime: Compact<TsInMs>
-  TokenMessageId: '[u8; 16; TokenMessageId]'
-  TransactionOutcome: '{}'
+  TokenMessageId: "[u8; 16; TokenMessageId]"
+  TransactionOutcome: "{}"
   TreasuryProposal:
     proposer: AccountId
     beneficiary: AccountId
