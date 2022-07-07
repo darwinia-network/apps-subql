@@ -1,4 +1,8 @@
 import { SubstrateEvent } from "@subql/types";
+import { Option, Vec, u128, u64, u32, U8aFixed } from "@polkadot/types";
+import { AccountId, AccountId32, Balance, BlockNumber } from "@polkadot/types/interfaces";
+import { ITuple } from "@polkadot/types-codec/types";
+
 import {
   Destination,
   OrderPhase,
@@ -10,9 +14,6 @@ import {
   NewFeeEntity,
   OrderStatus,
 } from "../../types";
-import { Option, Vec, u128, u64, u32, U8aFixed } from "@polkadot/types";
-import { AccountId, AccountId32, Balance, BlockNumber } from "@polkadot/types/interfaces";
-import { ITuple } from "@polkadot/types-codec/types";
 
 const getFeeMarketModule = (dest: Destination): string => {
   switch (dest) {
