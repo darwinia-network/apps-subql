@@ -1,5 +1,10 @@
 # *************** Fee Market **************
 
+type MsgOutOfSlot @jsonField {
+  nonce: String!
+  outOfSlot: Int! # block number
+}
+
 enum Destination {
   Crab
   Darwinia
@@ -15,6 +20,12 @@ enum Destination {
 enum OrderPhase {
   Created
   Delivered
+}
+
+enum OrderStatus {
+  Finished
+  InProgress
+  OutOfSlot
 }
 
 type NewFeeEntity @entity {
@@ -83,12 +94,6 @@ type SlashEntity @entity {
   relayer: RelayerEntity
 }
 
-type InProgressOrderEntity @entity {
-  id: ID! # destination-nonce
-  outOfSlotBlock: Int!
-  isOutOfSlot: Boolean! @index(unique: false)
-}
-
 type OrderEntity @entity {
   id: ID! # destination-nonce
   fee: BigInt
@@ -103,6 +108,7 @@ type OrderEntity @entity {
   outOfSlot: Int # block number
   confirmedSlotIndex: Int # -1: out of slot / 0: #1 / 1: #2 / 2: #3
   phase: OrderPhase
+  status: OrderStatus
 
   createTime: Date! # block timestamp
   createBlock: Int! # block number
@@ -126,9 +132,11 @@ type FeeMarketEntity @entity {
   id: ID! # use the value of Destination
   totalSlashs: BigInt # amount
   totalRewards: BigInt # amount
-  totalOrders: Int
-  totalFinished: Int
+  totalOrders: Int # totalFinished + totalInProgress + totalOutOfSlot
+  totalFinished: Int # real time
   totalInProgress: Int # real time
-  totalOutOfSlot: Int # finished but out of slot
+  totalOutOfSlot: Int # real time
+  unfinishOrders: [MsgOutOfSlot]
+
   averageSpeed: Int # millisecond
 }
