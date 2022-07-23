@@ -6,6 +6,7 @@ import {
   handleOrderRewardEvent,
   handleOrderSlashEvent,
   handleFeeUpdateEvent,
+  handleInitFeeEvent,
 } from "../../handlers/fee-market";
 
 const updateOutOfSlot = async (current: number, dest: Destination) => {
@@ -88,4 +89,14 @@ export const handleToDarwiniaFeeUpdateEvent = async (event: SubstrateEvent): Pro
 
 export const handleToCrabParachainFeeUpdateEvent = async (event: SubstrateEvent): Promise<void> => {
   await handleFeeUpdateEvent(event, Destination.CrabParachain);
+};
+
+// Init Fee
+
+export const handleToDarwiniaInitFeeEvent = async (event: SubstrateEvent): Promise<void> => {
+  await handleInitFeeEvent(event, Destination.Darwinia);
+};
+
+export const handleToCrabParachainInitFeeEvent = async (event: SubstrateEvent): Promise<void> => {
+  await handleInitFeeEvent(event, Destination.CrabParachain);
 };
