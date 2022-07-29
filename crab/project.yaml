@@ -94,9 +94,9 @@ dataSources:
           kind: substrate/EventHandler
           filter:
             module: darwiniaFeeMarket
-            method: EnrollAndLockCollateral
+            method: Enroll
         - handler: handleToCrabParachainInitFeeEvent
           kind: substrate/EventHandler
           filter:
             module: crabParachainFeeMarket
-            method: EnrollAndLockCollateral
+            method: Enroll

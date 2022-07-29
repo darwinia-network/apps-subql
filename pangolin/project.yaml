@@ -94,9 +94,9 @@ dataSources:
           kind: substrate/EventHandler
           filter:
             module: pangoroFeeMarket
-            method: EnrollAndLockCollateral
+            method: Enroll
         - handler: handleToPangolinParachainInitFeeEvent
           kind: substrate/EventHandler
           filter:
             module: pangolinParachainFeeMarket
-            method: EnrollAndLockCollateral
+            method: Enroll
