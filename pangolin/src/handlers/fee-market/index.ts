@@ -65,7 +65,7 @@ export const handleOrderCreateEvent = async (event: SubstrateEvent, dest: Destin
     }
   }
 
-  let sourceTxHash = event.extrinsic.extrinsic.hash.toHex();
+  let sourceTxHash = event.extrinsic?.extrinsic.hash.toHex();
   event.extrinsic?.events.forEach((event) => {
     if (event.event.section === "ethereum" && event.event.method === "Executed") {
       const {
@@ -82,7 +82,7 @@ export const handleOrderCreateEvent = async (event: SubstrateEvent, dest: Destin
   const orderRecordId = `${dest}-${nonce}`;
   const orderRecord = new OrderEntity(orderRecordId);
   orderRecord.fee = (fee as Balance).toBigInt();
-  orderRecord.sender = event.extrinsic.extrinsic.signer.toString();
+  orderRecord.sender = event.extrinsic?.extrinsic.signer.toString();
   orderRecord.sourceTxHash = sourceTxHash;
   orderRecord.slotTime = (api.consts[getFeeMarketModule(dest)].slot as u32).toNumber();
   orderRecord.outOfSlot = outOfSlotBlock;
@@ -90,7 +90,7 @@ export const handleOrderCreateEvent = async (event: SubstrateEvent, dest: Destin
   orderRecord.status = OrderStatus.InProgress;
   orderRecord.createTime = event.block.timestamp;
   orderRecord.createBlock = event.block.block.header.number.toNumber();
-  orderRecord.createExtrinsic = event.extrinsic.idx;
+  orderRecord.createExtrinsic = event.extrinsic?.idx;
   orderRecord.createEvent = event.idx;
   orderRecord.createLaneId = laneId.toString();
   orderRecord.assignedRelayers = (assignedRelayers as Vec<AccountId>).map((relayer) => relayer.toString());
@@ -127,7 +127,7 @@ export const handleOrderFinishEvent = async (event: SubstrateEvent, dest: Destin
     orderRecord.status = OrderStatus.Finished;
     orderRecord.finishTime = finishTime;
     orderRecord.finishBlock = finishBlock;
-    orderRecord.finishExtrinsic = event.extrinsic.idx;
+    orderRecord.finishExtrinsic = event.extrinsic?.idx;
     orderRecord.finishEvent = event.idx;
     orderRecord.finishLaneId = laneId.toString();
 
@@ -248,7 +248,7 @@ export const handleOrderRewardEvent = async (event: SubstrateEvent, dest: Destin
     }
     rewardRecord.rewardTime = event.block.timestamp;
     rewardRecord.rewardBlock = event.block.block.header.number.toNumber();
-    rewardRecord.rewardExtrinsic = event.extrinsic.idx;
+    rewardRecord.rewardExtrinsic = event.extrinsic?.idx;
     rewardRecord.rewardEvent = event.idx;
     rewardRecord.rewardLaneId = laneId.toString();
     await rewardRecord.save();
@@ -301,7 +301,7 @@ export const handleOrderSlashEvent = async (event: SubstrateEvent, dest: Destina
     slashRecord.orderId = orderRecordId;
     slashRecord.slashTime = event.block.timestamp;
     slashRecord.slashBlock = event.block.block.header.number.toNumber();
-    slashRecord.slashExtrinsic = event.extrinsic.idx;
+    slashRecord.slashExtrinsic = event.extrinsic?.idx;
     slashRecord.slashEvent = event.idx;
     slashRecord.slashLaneId = lane.toString();
     if (confirmTime.isSome) {
@@ -349,7 +349,7 @@ export const handleFeeUpdateEvent = async (event: SubstrateEvent, dest: Destinat
   newFeeRecord.relayerId = relayerRecordId;
   newFeeRecord.newfeeTime = event.block.timestamp;
   newFeeRecord.newfeeBlock = newfeeBlock;
-  newFeeRecord.newfeeExtrinsic = event.extrinsic.idx;
+  newFeeRecord.newfeeExtrinsic = event.extrinsic?.idx;
   newFeeRecord.newfeeEvent = newfeeEvent;
   await newFeeRecord.save();
 };
@@ -369,7 +369,7 @@ export const handleInitFeeEvent = async (event: SubstrateEvent, dest: Destinatio
 
     const blockNumber = event.block.block.header.number.toNumber();
     const eventIndex = event.idx;
-    const signer = event.extrinsic.extrinsic.signer.toString();
+    const signer = event.extrinsic?.extrinsic.signer.toString();
 
     const relayerRecordId = `${dest}-${signer}`;
     const newFeeRecordId = `${dest}-${blockNumber}-${eventIndex}`;
@@ -385,7 +385,7 @@ export const handleInitFeeEvent = async (event: SubstrateEvent, dest: Destinatio
     newFeeRecord.relayerId = relayerRecordId;
     newFeeRecord.newfeeTime = event.block.timestamp;
     newFeeRecord.newfeeBlock = blockNumber;
-    newFeeRecord.newfeeExtrinsic = event.extrinsic.idx;
+    newFeeRecord.newfeeExtrinsic = event.extrinsic?.idx;
     newFeeRecord.newfeeEvent = eventIndex;
     await newFeeRecord.save();
   }
