@@ -1,6 +1,6 @@
 import { SubstrateEvent } from "@subql/types";
 import { Option, Vec, u128, u64, u32, U8aFixed } from "@polkadot/types";
-import { AccountId, AccountId32, Balance, BlockNumber } from "@polkadot/types/interfaces";
+import { AccountId, AccountId32, Balance, BlockNumber, H256 } from "@polkadot/types/interfaces";
 import { ITuple } from "@polkadot/types-codec/types";
 
 import {
@@ -65,12 +65,25 @@ export const handleOrderCreateEvent = async (event: SubstrateEvent, dest: Destin
     }
   }
 
+  let sourceTxHash = event.extrinsic.extrinsic.hash.toHex();
+  event.extrinsic?.events.forEach((event) => {
+    if (event.event.section === "ethereum" && event.event.method === "Executed") {
+      const {
+        event: {
+          data: [_1, _2, hash],
+        },
+      } = event;
+
+      sourceTxHash = (hash as H256).toHex();
+    }
+  });
+
   // 3. save order record
   const orderRecordId = `${dest}-${nonce}`;
   const orderRecord = new OrderEntity(orderRecordId);
   orderRecord.fee = (fee as Balance).toBigInt();
   orderRecord.sender = event.extrinsic.extrinsic.signer.toString();
-  orderRecord.sourceTxHash = event.extrinsic.extrinsic.hash.toHex();
+  orderRecord.sourceTxHash = sourceTxHash;
   orderRecord.slotTime = (api.consts[getFeeMarketModule(dest)].slot as u32).toNumber();
   orderRecord.outOfSlot = outOfSlotBlock;
   orderRecord.phase = OrderPhase.Created;
