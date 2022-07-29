@@ -22,12 +22,17 @@ network:
     file: ./types.yaml
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 2800000
+    startBlock: 2015800
     mapping:
       file: ./dist/index.js
       handlers:
         - handler: handleBlock
           kind: substrate/BlockHandler
+        - handler: handlerStakingRewarded
+          kind: substrate/EventHandler
+          filter:
+            module: staking
+            method: Rewarded
         ################# Fee Market #################
         # Order Create
         - handler: handleToPangoroOrderCreateEvent
