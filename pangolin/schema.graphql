@@ -10,7 +10,7 @@ type StakingRewarded @entity {
   id: ID! # blockNumber-eventIndex
   blockTime: Date!
   blockNumber: Int!
-  extrinsicIndex: Int!
+  extrinsicIndex: Int
   eventIndex: Int!
 
   stash: StakingStash!
@@ -54,7 +54,7 @@ type NewFeeEntity @entity {
 
   newfeeTime: Date! # block timestamp
   newfeeBlock: Int! # block number
-  newfeeExtrinsic: Int! # extrinsic index
+  newfeeExtrinsic: Int # extrinsic index
   newfeeEvent: Int! # event index
 }
 
@@ -82,7 +82,7 @@ type RewardEntity @entity {
 
   rewardTime: Date! # block timestamp
   rewardBlock: Int! # block number
-  rewardExtrinsic: Int! # extrinsic index
+  rewardExtrinsic: Int # extrinsic index
   rewardEvent: Int! # event index
   rewardLaneId: String!
 
@@ -102,7 +102,7 @@ type SlashEntity @entity {
 
   slashTime: Date! # block timestamp
   slashBlock: Int! # block number
-  slashExtrinsic: Int! # extrinsic index
+  slashExtrinsic: Int # extrinsic index
   slashEvent: Int! # event index
   slashLaneId: String!
 
@@ -131,7 +131,7 @@ type OrderEntity @entity {
 
   createTime: Date! # block timestamp
   createBlock: Int! # block number
-  createExtrinsic: Int! # extrinsic index
+  createExtrinsic: Int # extrinsic index
   createEvent: Int! # event index
   createLaneId: String!
 

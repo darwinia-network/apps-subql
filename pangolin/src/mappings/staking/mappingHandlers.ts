@@ -12,7 +12,7 @@ export const handlerStakingRewarded = async (event: SubstrateEvent): Promise<voi
 
   const blockTime = event.block.timestamp;
   const blockNumber = event.block.block.header.number.toNumber();
-  const extrinsicIndex = event.extrinsic.idx;
+  const extrinsicIndex = event.extrinsic?.idx;
   const eventIndex = event.idx;
 
   const stash = (paramStash as AccountId).toString();
