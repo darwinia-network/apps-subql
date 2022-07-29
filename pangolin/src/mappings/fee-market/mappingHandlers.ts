@@ -93,10 +93,10 @@ export const handleToPangolinParachainFeeUpdateEvent = async (event: SubstrateEv
 
 // Init Fee
 
-export const handleToDarwiniaInitFeeEvent = async (event: SubstrateEvent): Promise<void> => {
-  await handleInitFeeEvent(event, Destination.Darwinia);
+export const handleToPangoroInitFeeEvent = async (event: SubstrateEvent): Promise<void> => {
+  await handleInitFeeEvent(event, Destination.Pangoro);
 };
 
-export const handleToCrabParachainInitFeeEvent = async (event: SubstrateEvent): Promise<void> => {
-  await handleInitFeeEvent(event, Destination.CrabParachain);
+export const handleToPangolinParachainInitFeeEvent = async (event: SubstrateEvent): Promise<void> => {
+  await handleInitFeeEvent(event, Destination.PangolinParachain);
 };

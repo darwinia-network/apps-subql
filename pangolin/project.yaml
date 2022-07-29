@@ -90,13 +90,13 @@ dataSources:
             module: pangolinParachainFeeMarket
             method: UpdateRelayFee
         # Init Fee
-        - handler: handleToDarwiniaInitFeeEvent
+        - handler: handleToPangoroInitFeeEvent
           kind: substrate/EventHandler
           filter:
-            module: darwiniaFeeMarket
+            module: pangoroFeeMarket
             method: EnrollAndLockCollateral
-        - handler: handleToCrabParachainInitFeeEvent
+        - handler: handleToPangolinParachainInitFeeEvent
           kind: substrate/EventHandler
           filter:
-            module: crabParachainFeeMarket
+            module: pangolinParachainFeeMarket
             method: EnrollAndLockCollateral
