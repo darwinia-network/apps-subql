@@ -360,33 +360,28 @@ export const handleFeeUpdateEvent = async (event: SubstrateEvent, dest: Destinat
 export const handleInitFeeEvent = async (event: SubstrateEvent, dest: Destination): Promise<void> => {
   const {
     event: {
-      data: [_, relayFee],
+      data: [paramAccount, _, paramFee],
     },
   } = event;
 
-  if ((relayFee as Option<Balance>).isSome) {
-    const initFee = (relayFee as Option<Balance>).unwrap();
+  const blockNumber = event.block.block.header.number.toNumber();
+  const eventIndex = event.idx;
 
-    const blockNumber = event.block.block.header.number.toNumber();
-    const eventIndex = event.idx;
-    const signer = event.extrinsic?.extrinsic.signer.toString();
+  const relayerRecordId = `${dest}-${(paramAccount as AccountId).toString()}`;
+  const newFeeRecordId = `${dest}-${blockNumber}-${eventIndex}`;
 
-    const relayerRecordId = `${dest}-${signer}`;
-    const newFeeRecordId = `${dest}-${blockNumber}-${eventIndex}`;
-
-    // 1. save relayer record
-    if (!(await RelayerEntity.get(relayerRecordId))) {
-      await new RelayerEntity(relayerRecordId).save();
-    }
-
-    // 2. save new fee record
-    const newFeeRecord = new NewFeeEntity(newFeeRecordId);
-    newFeeRecord.fee = (initFee as Balance).toBigInt();
-    newFeeRecord.relayerId = relayerRecordId;
-    newFeeRecord.newfeeTime = event.block.timestamp;
-    newFeeRecord.newfeeBlock = blockNumber;
-    newFeeRecord.newfeeExtrinsic = event.extrinsic?.idx;
-    newFeeRecord.newfeeEvent = eventIndex;
-    await newFeeRecord.save();
+  // 1. save relayer record
+  if (!(await RelayerEntity.get(relayerRecordId))) {
+    await new RelayerEntity(relayerRecordId).save();
   }
+
+  // 2. save new fee record
+  const newFeeRecord = new NewFeeEntity(newFeeRecordId);
+  newFeeRecord.fee = (paramFee as Balance).toBigInt();
+  newFeeRecord.relayerId = relayerRecordId;
+  newFeeRecord.newfeeTime = event.block.timestamp;
+  newFeeRecord.newfeeBlock = blockNumber;
+  newFeeRecord.newfeeExtrinsic = event.extrinsic?.idx;
+  newFeeRecord.newfeeEvent = eventIndex;
+  await newFeeRecord.save();
 };
