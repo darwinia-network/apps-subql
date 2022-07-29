@@ -28,6 +28,11 @@ dataSources:
       handlers:
         - handler: handleBlock
           kind: substrate/BlockHandler
+        - handler: handlerStakingRewarded
+          kind: substrate/EventHandler
+          filter:
+            module: staking
+            method: Rewarded
         ################# Fee Market #################
         # Order Create
         - handler: handleToDarwiniaOrderCreateEvent
