@@ -194,7 +194,7 @@ export const handleOrderRewardEvent = async (event: SubstrateEvent, dest: Destin
       let assigned: AccountId;
       let assignedReward: Balance;
 
-      if (toSlotRelayer.isSome) {
+      if (toSlotRelayer?.isSome) {
         [assigned, assignedReward] = toSlotRelayer.unwrap();
       } else {
         for (const [acc, balance] of toAssignedRelayers.entries()) {
