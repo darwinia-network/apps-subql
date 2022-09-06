@@ -171,8 +171,6 @@ export const handleOrderRewardEvent = async (event: SubstrateEvent, dest: Destin
     },
   } = event;
 
-  // const { specVersion } = api.consts.system.version;
-  // toAssignedRelayers: dest === Destination.Pangoro && specVersion.toNumber() >= 29000
   const { toSlotRelayer, toAssignedRelayers, toMessageRelayer, toConfirmRelayer, toTreasury } = rewards as unknown as {
     toSlotRelayer?: Option<ITuple<[AccountId, Balance]>>;
     toAssignedRelayers?: BTreeMap<AccountId, Balance>;
